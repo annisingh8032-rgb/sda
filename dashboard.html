@@ -60,6 +60,7 @@ th{background:#f4f1fa;color:var(--deep);position:sticky;top:0}
 <div class="wrap">
 <img class="banner" src="banner.png" alt="Spectrum Dance Academy">
 <div class="admin-bar">Admin Only — Dashboard</div>
+<div id="sync" style="text-align:center;font-size:12px;font-weight:700;margin:-4px 0 10px;color:#1e8f5f">✓ Synced</div>
 
 <div class="tabs">
   <div class="tab" id="tab-fees" data-v="fees">Fees<small id="cFees">₹0 today</small></div>
@@ -130,152 +131,189 @@ th{background:#f4f1fa;color:var(--deep);position:sticky;top:0}
 <script>
 var WEB_APP_URL="https://script.google.com/macros/s/AKfycbzLUghnI4QXXcElOVTa43Ify1MOPo9kWbYHKdmUvO0NRPzU4qK3AvTGy2gVOPoW3py8Uw/exec";
 var ADMIN_KEY=new URLSearchParams(location.search).get("key")||"sda2026";
+var ACADEMY="Spectrum Dance Academy",CC="91";
 function api(a,p){p=p||{};p.key=ADMIN_KEY;p.adminKey=ADMIN_KEY;
   return fetch(WEB_APP_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:a,payload:p})}).then(function(r){return r.json()});}
 function $(i){return document.getElementById(i)}
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
 function inr(n){return "₹"+(Number(n)||0).toLocaleString("en-IN")}
+function r2(n){return Math.round((Number(n)||0)*100)/100}
+function f2(n){return (Number(n)||0).toFixed(2)}
 function today(){var d=new Date();return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2)}
-function toast(msg,link){var t=$("toast");t.innerHTML=esc(msg)+(link?'<a target="_blank" href="'+esc(link)+'">Open WhatsApp</a>':"");t.style.display="block";clearTimeout(t._t);t._t=setTimeout(function(){t.style.display="none"},link?12000:3500)}
-function waDone(res,okMsg){ // same WhatsApp behaviour as the old receipt page
-  if(res.whatsapp&&!res.whatsapp.sent&&res.whatsapp.link){window.open(res.whatsapp.link,"_blank");toast(okMsg,res.whatsapp.link)}
-  else toast(okMsg+(res.whatsapp&&res.whatsapp.sent?" · WhatsApp sent":""));}
-function ask(msg){return confirm(msg)}
+function toISO(s){if(!s)return"";var m=String(s).match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);return m?m[3]+"-"+("0"+m[2]).slice(-2)+"-"+("0"+m[1]).slice(-2):(/^\d{4}-/.test(s)?String(s).slice(0,10):"")}
+function toDMY(s){var m=String(s||"").match(/^(\d{4})-(\d\d)-(\d\d)/);return m?m[3]+"/"+m[2]+"/"+m[1]:(s||"")}
+function toast(msg){var t=$("toast");t.textContent=msg;t.style.display="block";clearTimeout(t._t);t._t=setTimeout(function(){t.style.display="none"},3500)}
 function modal(html){$("modalBox").innerHTML=html;$("modal").style.display="flex"}
 function closeModal(){$("modal").style.display="none"}
 $("modal").addEventListener("click",function(e){if(e.target===this)closeModal()});
 
-// ---- helpers to read a student row regardless of exact header spelling ----
+/* ===== local storage + offline queue ===== */
+var LS="sda_";
+function lsGet(k,d){try{var v=localStorage.getItem(LS+k);return v?JSON.parse(v):d}catch(e){return d}}
+function lsSet(k,v){try{localStorage.setItem(LS+k,JSON.stringify(v))}catch(e){}}
+var outbox=lsGet("outbox",[]),failed=lsGet("failed",[]),flushing=false;
+function uid(){return"c"+Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function updSync(){var e=$("sync"),off=!navigator.onLine;
+  if(outbox.length){e.textContent="⟳ "+outbox.length+" change sync hona baaki"+(off?" (offline)":"");e.style.color="#8a5a00"}
+  else if(failed.length){e.textContent="⚠ "+failed.length+" change sync nahi hua";e.style.color="#c0392b"}
+  else{e.textContent=off?"Offline — saved changes internet aate hi sync honge":"✓ Synced";e.style.color=off?"#8a5a00":"#1e8f5f"}}
+function queue(action,payload){payload.clientId=uid();outbox.push({action:action,payload:payload});lsSet("outbox",outbox);updSync();flush()}
+function flush(){if(flushing||!outbox.length||!navigator.onLine)return;flushing=true;var it=outbox[0];
+  api(it.action,JSON.parse(JSON.stringify(it.payload))).then(function(r){
+    outbox.shift();
+    if(r.status!=="success"){failed.push({a:it.action,m:r.message});lsSet("failed",failed);toast("Sync fail: "+(r.message||""))}
+    lsSet("outbox",outbox);flushing=false;updSync();
+    if(outbox.length)flush();else afterSync();
+  }).catch(function(){flushing=false;updSync()})}
+window.addEventListener("online",function(){updSync();flush()});window.addEventListener("offline",updSync);
+setInterval(flush,4000);
+function afterSync(){fetchStudents().then(function(){refreshViews();if(cur){renderInfo();loadHistory()}});loadReport()}
+
+/* ===== WhatsApp message (same text the backend uses) ===== */
+function waLink(m,d){var t=Number(d.total)||0,x=Number(d.discount)||0;
+  var msg=ACADEMY+"\nPayment Receipt\nReg No: "+d.regNo+"\nName: "+d.name+"\nPayment Date: "+d.paymentDate+"\n"+
+    (d.sessionDate?"Session Date: "+d.sessionDate+"\n":"")+
+    (d.expiryDate?"Expiry Date: "+d.expiryDate+"\n":"")+((d.duration||d.durationType)?"Duration: "+(d.duration||"")+" "+(d.durationType||"")+"\n":"")+
+    "Total: ₹"+f2(t)+"\nPaid: ₹"+f2(d.paid)+"\n"+(x>0&&t>0?"Discount: ₹"+f2(x)+" ("+(Math.round(x/t*1000)/10)+"% off)\n":"")+
+    "Dues: ₹"+f2(d.dues)+"\n"+(Number(d.dues)>0&&d.duesDate?"Pay Dues By: "+d.duesDate+"\n":"")+"Note: Your money will not be refundable.\nThank you!";
+  return"https://wa.me/"+CC+String(m||"").replace(/\D/g,"")+"?text="+encodeURIComponent(msg)}
+function sendWA(m,d){window.open(waLink(m,d),"_blank")}
+
+/* ===== helpers to read a student row ===== */
 function g(row,re){for(var k in row){if(re.test(k))return row[k]}return ""}
 var F={reg:/^registration/i,name:/^student name/i,phone:/^mobile/i,adm:/^admission date/i,batch:/^batch time/i,cat:/^interested/i,dur:/^duration$/i,durT:/^duration type/i,exp:/^expiry/i};
 function due(s){return Number(s._dues)||0}
 function matchStu(row,q){q=q.toLowerCase().trim();if(!q)return true;
   for(var k in row){if(/reg|name|mobile|phone/i.test(k)&&String(row[k]).toLowerCase().indexOf(q)>-1)return true}return false}
+function byReg(reg){return students.filter(function(x){return g(x,F.reg)==reg})[0]}
 
-var students=[],headers=[],cur=null;
+var students=lsGet("students",[]),headers=lsGet("headers",[]),cur=null,curView="fees";
+function saveStu(){lsSet("students",students);lsSet("headers",headers);stuCounts()}
+function stuCounts(){$("cStu").textContent=students.length+" students";$("cDues").textContent=students.filter(function(s){return due(s)>0}).length+" pending"}
+function fetchStudents(){
+  if(outbox.length||!navigator.onLine)return Promise.resolve(students);
+  return api("getStudents",{}).then(function(r){if(r.status!=="success")throw new Error(r.message);students=r.rows||[];headers=r.headers||headers;saveStu();return students}).catch(function(){return students})}
+function refreshViews(){stuCounts();if(curView==="dues")renderDues();if(curView==="students")renderStudents();if(cur){cur=byReg(g(cur,F.reg))||cur}}
 
-// ---- navigation ----
-function show(v){["fees","dues","students"].forEach(function(x){$("v-"+x).classList.toggle("hide",x!==v);$("tab-"+x).classList.toggle("on",x===v)});
-  if(v==="dues")loadDues();if(v==="students")loadStudents();}
+function show(v){curView=v;["fees","dues","students"].forEach(function(x){$("v-"+x).classList.toggle("hide",x!==v);$("tab-"+x).classList.toggle("on",x===v)});
+  if(v==="dues")renderDues();if(v==="students")renderStudents();}
 document.querySelectorAll(".tab").forEach(function(t){t.addEventListener("click",function(){show(t.dataset.v)})});
 
-// ---- payment report ----
-function loadReport(){var d=$("repDate").value||today();
-  api("getPaymentReport",{date:d}).then(function(r){
-    if(r.status!=="success")throw new Error(r.message||"Failed");
-    $("rTotal").textContent=inr(r.total);$("rCash").textContent=inr(r.cash);$("rOnline").textContent=inr(r.online);
-    if(d===today())$("cFees").textContent=inr(r.total)+" today";
-    var rows=r.payments||[];
-    $("repList").innerHTML=rows.length?'<table><tr><th>Reg No</th><th>Name</th><th>Paid</th><th>Mode</th></tr>'+rows.map(function(p){return"<tr><td>"+esc(p.regNo)+"</td><td>"+esc(p.studentName)+"</td><td>"+inr(p.paid)+"</td><td>"+esc(p.mode)+"</td></tr>"}).join("")+"</table>":'<div class="muted">Is date par koi payment nahi.</div>';
-  }).catch(function(e){["rTotal","rCash","rOnline"].forEach(function(i){$(i).textContent="₹0"});$("repList").innerHTML='<div class="muted">Report not available ('+esc(e.message)+')</div>'});}
+/* ===== payment report ===== */
+function loadReport(){var d=$("repDate").value||today(),c=lsGet("rep_"+d,null);drawReport(d,c);
+  if(navigator.onLine)api("getPaymentReport",{date:d}).then(function(r){if(r.status!=="success")throw new Error(r.message);lsSet("rep_"+d,r);drawReport(d,r)}).catch(function(){})}
+function drawReport(d,r){r=r||{total:0,cash:0,online:0,payments:[]};var t=r.total,cs=r.cash,on=r.online,rows=(r.payments||[]).slice();
+  outbox.forEach(function(o){var p=o.payload;if(o.action!=="submitPayment"&&o.action!=="payDues")return;if((p.paymentDate||today())!==d)return;
+    var a=parseFloat(p.paidAmount)||0;t+=a;if(p.paymentMode==="Cash")cs+=a;else if(p.paymentMode==="Online")on+=a;rows.push({regNo:p.regNo,studentName:p.studentName,paid:a,mode:p.paymentMode+" ⏳"})});
+  $("rTotal").textContent=inr(t);$("rCash").textContent=inr(cs);$("rOnline").textContent=inr(on);
+  if(d===today())$("cFees").textContent=inr(t)+" today";
+  $("repList").innerHTML=rows.length?'<table><tr><th>Reg No</th><th>Name</th><th>Paid</th><th>Mode</th></tr>'+rows.map(function(p){return"<tr><td>"+esc(p.regNo)+"</td><td>"+esc(p.studentName)+"</td><td>"+inr(p.paid)+"</td><td>"+esc(p.mode)+"</td></tr>"}).join("")+"</table>":'<div class="muted">Is date par koi payment nahi.</div>'}
 $("repDate").value=today();$("repDate").addEventListener("change",loadReport);
 $("btnToday").addEventListener("click",function(){$("repDate").value=today();loadReport()});
 
-// ---- load all students (cache) ----
-function fetchStudents(){return api("getStudents",{}).then(function(r){
-  if(r.status!=="success")throw new Error(r.message||"Failed to load students");
-  students=r.rows||[];headers=r.headers||(students[0]?Object.keys(students[0]):[]);
-  $("cStu").textContent=students.length+" students";
-  var d=students.filter(function(s){return due(s)>0}).length;$("cDues").textContent=d+" pending";return students})}
+/* ================= FEES ================= */
+$("feeSearch").addEventListener("input",function(){var q=this.value;if(!q.trim()){$("feeResults").innerHTML="";return}
+  var m=students.filter(function(s){return matchStu(s,q)}).slice(0,15);
+  $("feeResults").innerHTML=m.length?m.map(function(s){return'<div class="pick" data-r="'+esc(g(s,F.reg))+'"><b>'+esc(g(s,F.name))+'</b> · '+esc(g(s,F.reg))+' · '+esc(g(s,F.phone))+'</div>'}).join(""):'<div class="muted">'+(students.length?"Koi student nahi mila.":"Student list abhi load nahi hui — pehli baar internet chahiye.")+'</div>';
+  document.querySelectorAll("#feeResults .pick").forEach(function(p){p.addEventListener("click",function(){pickStudent(byReg(p.dataset.r))})})});
 
-// ================= FEES =================
-$("feeSearch").addEventListener("input",function(){
-  var q=this.value;if(!q.trim()){$("feeResults").innerHTML="";return}
-  var go=function(){var m=students.filter(function(s){return matchStu(s,q)}).slice(0,15);
-    $("feeResults").innerHTML=m.length?m.map(function(s,i){return'<div class="pick" data-i="'+students.indexOf(s)+'"><b>'+esc(g(s,F.name))+'</b> · '+esc(g(s,F.reg))+' · '+esc(g(s,F.phone))+'</div>'}).join(""):'<div class="muted">Koi student nahi mila.</div>';
-    document.querySelectorAll("#feeResults .pick").forEach(function(p){p.addEventListener("click",function(){pickStudent(students[+p.dataset.i])})})};
-  students.length?go():fetchStudents().then(go).catch(function(e){toast(e.message)});});
-
-function pickStudent(s){cur=s;$("feeResults").innerHTML="";$("feeSearch").value="";$("feeForm").innerHTML="";$("feeStudent").classList.remove("hide");
+function renderInfo(){var s=cur;if(!s)return;
   var items=[["Reg No",g(s,F.reg)],["Name",g(s,F.name)],["Phone",g(s,F.phone)],["Admission Date",g(s,F.adm)],["Batch Time",g(s,F.batch)],["Category",g(s,F.cat)],["Duration",g(s,F.dur)+" "+g(s,F.durT)],["Expiry Date",g(s,F.exp)],["Dues",inr(due(s))]];
   $("feeInfo").innerHTML=items.map(function(x){return"<div><span>"+x[0]+"</span><b"+(x[0]==="Dues"&&due(s)>0?' class="red"':"")+">"+esc(x[1])+"</b></div>"}).join("");
-  $("btnUpdDues").classList.toggle("hide",!(due(s)>0));loadHistory();}
+  $("btnUpdDues").classList.toggle("hide",!(due(s)>0))}
+function pickStudent(s){if(!s)return;cur=s;$("feeResults").innerHTML="";$("feeSearch").value="";$("feeForm").innerHTML="";$("feeStudent").classList.remove("hide");renderInfo();loadHistory()}
 
-function loadHistory(){var reg=g(cur,F.reg);$("payHistory").innerHTML='<div class="muted">Loading...</div>';
-  api("getPayments",{regNo:reg}).then(function(r){
-    if(r.status!=="success")throw new Error(r.message);var rows=r.payments||[];
-    $("payHistory").innerHTML=rows.length?'<table><tr><th>Payment Date</th><th>Session Date</th><th>Duration</th><th>Expiry</th><th>Paid</th><th>Dues</th><th></th></tr>'+rows.map(function(p,i){
-      return"<tr><td>"+esc(p.paymentDate)+"</td><td>"+esc(p.sessionDate)+"</td><td>"+esc(p.duration)+" "+esc(p.durationType)+"</td><td>"+esc(p.expiryDate)+"</td><td>"+inr(p.paid)+"</td><td>"+inr(p.dues)+'</td><td><button class="b ok" data-a="wa" data-i="'+i+'">WhatsApp</button> <button class="b" data-a="ed" data-i="'+i+'">Edit</button> <button class="b del" data-a="dl" data-i="'+i+'">Delete</button></td></tr>'}).join("")+"</table>":'<div class="muted">Is student ki koi payment history nahi.</div>';
-    $("payHistory").querySelectorAll("button").forEach(function(b){b.addEventListener("click",function(){var p=rows[+b.dataset.i],a=b.dataset.a;
-      if(a==="wa")api("resendPaymentWhatsapp",{regNo:reg,paymentId:p.id}).then(function(r){r.status==="success"?waDone(r,"Message ready"):toast(r.message)});
-      if(a==="ed")editPayment(p);
-      if(a==="dl"&&ask("Kya aap sach mai is payment record ko delete karna chahte hai?"))api("deletePayment",{regNo:reg,paymentId:p.id}).then(function(r){toast(r.status==="success"?"Payment deleted":r.message);loadHistory();loadReport();fetchStudents()})})})
-  }).catch(function(e){$("payHistory").innerHTML='<div class="muted">'+esc(e.message)+"</div>"})}
-
-function editPayment(p){var keys=[["paymentDate","Payment Date"],["sessionDate","Session Date"],["duration","Duration"],["durationType","Duration Type"],["expiryDate","Expiry Date"],["total","Total Amount"],["paid","Paid Amount"],["dues","Dues"],["mode","Payment Mode"]];
+function pendRows(reg){return outbox.filter(function(o){return(o.action==="submitPayment"||o.action==="payDues")&&o.payload.regNo==reg}).map(function(o){var p=o.payload;
+  return{pending:true,id:"x"+p.clientId,paymentDate:toDMY(p.paymentDate||today()),sessionDate:toDMY(p.sessionDate),duration:p.duration,durationType:p.durationType,expiryDate:p.expiryDate,total:p.totalAmount,paid:p.paidAmount,dues:p.localDues,duesDate:toDMY(p.duesDate),mode:p.paymentMode}}).reverse()}
+function loadHistory(){var reg=g(cur,F.reg);drawHistory(lsGet("pay_"+reg,[]));
+  if(navigator.onLine&&!outbox.length)api("getPayments",{regNo:reg}).then(function(r){if(r.status!=="success")throw new Error(r.message);lsSet("pay_"+reg,r.payments);if(cur&&g(cur,F.reg)==reg)drawHistory(r.payments)}).catch(function(){})}
+function drawHistory(saved){var reg=g(cur,F.reg),rows=pendRows(reg).concat(saved||[]);
+  $("payHistory").innerHTML=rows.length?'<table><tr><th>Payment Date</th><th>Session Date</th><th>Duration</th><th>Expiry</th><th>Paid</th><th>Dues</th><th></th></tr>'+rows.map(function(p,i){
+    return"<tr><td>"+esc(p.paymentDate)+"</td><td>"+esc(p.sessionDate)+"</td><td>"+esc(p.duration)+" "+esc(p.durationType)+"</td><td>"+esc(p.expiryDate)+"</td><td>"+inr(p.paid)+"</td><td>"+inr(p.dues)+'</td><td><button class="b ok" data-a="wa" data-i="'+i+'">WhatsApp</button> '+(p.pending?"⏳ sync ho raha hai":'<button class="b" data-a="ed" data-i="'+i+'">Edit</button> <button class="b del" data-a="dl" data-i="'+i+'">Delete</button>')+"</td></tr>"}).join("")+"</table>":'<div class="muted">Is student ki koi payment history nahi.</div>';
+  $("payHistory").querySelectorAll("button").forEach(function(b){b.addEventListener("click",function(){var p=rows[+b.dataset.i],a=b.dataset.a;
+    if(a==="wa")sendWA(g(cur,F.phone),{regNo:reg,name:g(cur,F.name),paymentDate:p.paymentDate,sessionDate:p.sessionDate,expiryDate:p.expiryDate,duration:p.duration,durationType:p.durationType,total:p.total,paid:p.paid,discount:p.discount,dues:p.dues,duesDate:p.duesDate});
+    if(a==="ed")editPayment(p);
+    if(a==="dl"&&confirm("Kya aap sach mai is payment record ko delete karna chahte hai?")){
+      var c=lsGet("pay_"+reg,[]).filter(function(x){return x.id!==p.id});lsSet("pay_"+reg,c);localSync(reg,c);queue("deletePayment",{regNo:reg,paymentId:p.id});drawHistory(c);renderInfo();loadReport()}})})}
+function localSync(reg,rows){var s=byReg(reg);if(!s||!rows.length)return;var l=rows[0];s._dues=l.dues;s._duesDate=l.duesDate;
+  if(l.expiryDate){s["Duration"]=l.duration;s["Duration Type"]=l.durationType;s["Expiry Date"]=l.expiryDate}saveStu()}
+function editPayment(p){var reg=g(cur,F.reg),keys=[["paymentDate","Payment Date"],["sessionDate","Session Date"],["duration","Duration"],["durationType","Duration Type"],["expiryDate","Expiry Date"],["total","Total Amount"],["paid","Paid Amount"],["dues","Dues"],["mode","Payment Mode"]];
   modal("<h3>Edit Payment</h3><div class='grid'>"+keys.map(function(k){return"<div><label>"+k[1]+"</label><input data-k='"+k[0]+"' value='"+esc(p[k[0]])+"'></div>"}).join("")+"</div><div class='row' style='margin-top:14px'><button class='b ok' id='mSave'>Save</button><button class='b' id='mCancel'>Cancel</button></div>");
   $("mCancel").onclick=closeModal;
   $("mSave").onclick=function(){var d={};document.querySelectorAll("#modalBox input").forEach(function(i){d[i.dataset.k]=i.value});
-    api("updatePayment",{regNo:g(cur,F.reg),paymentId:p.id,data:d}).then(function(r){closeModal();toast(r.status==="success"?"Payment updated":r.message);loadHistory();loadReport()})}}
+    var c=lsGet("pay_"+reg,[]);c.forEach(function(x){if(x.id===p.id)for(var k in d)x[k]=d[k]});lsSet("pay_"+reg,c);localSync(reg,c);
+    queue("updatePayment",{regNo:reg,paymentId:p.id,data:d});closeModal();drawHistory(c);renderInfo();loadReport();toast("Saved — sync ho raha hai")}}
 
-// payment form: used for both "Add Payment" and "Update Dues"
-function payForm(mode){var s=cur,isDues=mode==="dues",dues0=due(s)||0;
+function payForm(mode){var s=cur,isDues=mode==="dues",dues0=due(s);
   $("feeForm").innerHTML='<div class="card"><b>'+(isDues?"Update Dues":"Add Payment")+'</b><div class="grid" style="margin-top:10px">'+
   '<div><label>Payment Date</label><input type="date" id="fPD" value="'+today()+'"></div>'+
   '<div><label>Session Date</label><input type="date" id="fSD" value="'+esc(toISO(g(s,F.exp)))+'"></div>'+
-  '<div><label>Duration</label><input id="fDur" type="number" min="0" value="'+esc(g(s,F.dur))+'"></div>'+
-  '<div><label>Duration Type</label><select id="fDT">'+["Day","Month","Year"].map(function(t){return"<option"+(new RegExp(t,"i").test(g(s,F.durT))?" selected":"")+">"+t+"</option>"}).join("")+'</select></div>'+
+  '<div><label>Duration</label><input id="fDur" type="number" min="1" value="'+(isDues?esc(g(s,F.dur)):"")+'"></div>'+
+  '<div><label>Duration Type</label><select id="fDT">'+(isDues?"":'<option value="">Select</option>')+["Day","Month","Year"].map(function(t){return"<option"+(isDues&&new RegExp(t,"i").test(g(s,F.durT))?" selected":"")+">"+t+"</option>"}).join("")+'</select></div>'+
   '<div><label>New Expiry Date</label><input id="fExp" readonly></div>'+
   '<div><label>Total Amount (₹)</label><input id="fTot" type="number" min="0" step="0.01" '+(isDues?'value="'+dues0+'" readonly':"")+'></div>'+
   '<div><label>Paid Amount (₹)</label><input id="fPaid" type="number" min="0" step="0.01"></div>'+
   '<div><label>Dues (₹)</label><input id="fDues" readonly value="0.00"></div>'+
   '<div><label>Payment Mode</label><select id="fMode"><option>Cash</option><option>Online</option></select></div>'+
   '<div id="fDDw" class="hide"><label>Dues Date (deadline)</label><input type="date" id="fDD"></div></div>'+
-  '<button class="b pri" id="fSubmit" style="margin-top:14px">Submit &amp; Send WhatsApp</button></div>';
+  '<button class="b pri" id="fSubmit" style="margin-top:14px">Save &amp; Send WhatsApp</button></div>';
   function calc(){var d=(parseFloat($("fTot").value)||0)-(parseFloat($("fPaid").value)||0);$("fDues").value=d.toFixed(2);$("fDDw").classList.toggle("hide",!(d>0))}
   $("fTot").oninput=calc;$("fPaid").oninput=calc;calc();
-  function calcExp(){if(isDues){$("fExp").value=g(s,F.exp);return}var b=$("fSD").value,n=parseInt($("fDur").value,10),t=$("fDT").value;if(!b||!n){$("fExp").value="";return}
+  function calcExp(){if(isDues){$("fExp").value=g(s,F.exp);return}var b=$("fSD").value,n=parseInt($("fDur").value,10),t=$("fDT").value;if(!b||!n||!t){$("fExp").value="";return}
     var d=new Date(b+"T00:00:00");if(t==="Day")d.setDate(d.getDate()+n);else if(t==="Month")d.setMonth(d.getMonth()+n);else d.setFullYear(d.getFullYear()+n);
     $("fExp").value=("0"+d.getDate()).slice(-2)+"/"+("0"+(d.getMonth()+1)).slice(-2)+"/"+d.getFullYear()}
   $("fSD").oninput=calcExp;$("fDur").oninput=calcExp;$("fDT").onchange=calcExp;calcExp();
-  $("fSubmit").onclick=function(){var b=this;if(!$("fTot").value||$("fPaid").value===""){toast("Total aur Paid amount bhariye");return}
-    b.disabled=true;b.textContent="Submitting...";
-    api(isDues?"payDues":"submitPayment",{regNo:g(s,F.reg),studentName:g(s,F.name),mobile:g(s,F.phone),duration:$("fDur").value,durationType:$("fDT").value,
-      paymentDate:$("fPD").value,sessionDate:$("fSD").value,expiryDate:$("fExp").value,email:s['Email']||'',totalAmount:$("fTot").value,paidAmount:$("fPaid").value,
-      duesDate:$("fDD").value,paymentMode:$("fMode").value,paymentSettlement:s['Payment Settlement']||'',discountAmount:"0",additionalCharges:[]}).then(function(r){
-      if(r.status!=="success"){toast(r.message||"Failed");b.disabled=false;b.textContent="Submit & Send WhatsApp";return}
-      $("feeForm").innerHTML="";waDone(r,"Payment saved");loadHistory();loadReport();fetchStudents().then(function(){var n=students.filter(function(x){return g(x,F.reg)==g(s,F.reg)})[0];if(n)pickStudent(n)})
-    }).catch(function(e){toast(e.message);b.disabled=false;b.textContent="Submit & Send WhatsApp"})}}
-function toISO(s){if(!s)return"";var m=String(s).match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);return m?m[3]+"-"+("0"+m[2]).slice(-2)+"-"+("0"+m[1]).slice(-2):(/^\d{4}-/.test(s)?String(s).slice(0,10):"")}
+  $("fSubmit").onclick=function(){
+    var tot=parseFloat($("fTot").value),paid=parseFloat($("fPaid").value);
+    if(isNaN(tot)||isNaN(paid)){toast("Total aur Paid amount bhariye");return}
+    if(!isDues&&(!$("fDur").value||!$("fDT").value)){toast("Duration aur Duration Type bhariye");return}
+    var dues=Math.max(0,r2(tot-paid)),dd=dues>0?$("fDD").value:"",reg=g(s,F.reg);
+    var p={regNo:reg,studentName:g(s,F.name),mobile:g(s,F.phone),email:s["Email"]||"",duration:$("fDur").value,durationType:$("fDT").value,
+      paymentDate:$("fPD").value,sessionDate:$("fSD").value,expiryDate:$("fExp").value,totalAmount:String(tot),paidAmount:String(paid),
+      duesDate:dd,paymentMode:$("fMode").value,paymentSettlement:s["Payment Settlement"]||"",discountAmount:"0",additionalCharges:[],localDues:dues};
+    var wa={regNo:reg,name:g(s,F.name),paymentDate:toDMY(p.paymentDate),sessionDate:toDMY(p.sessionDate),expiryDate:p.expiryDate,duration:p.duration,durationType:p.durationType,duesDate:toDMY(dd),dues:dues};
+    if(isDues){wa.total=Number(s._total)||tot;wa.paid=r2((Number(s._paid)||0)+paid);s._paid=wa.paid}
+    else{wa.total=tot;wa.paid=paid;s._total=tot;s._paid=paid;s["Duration"]=p.duration;s["Duration Type"]=p.durationType;s["Expiry Date"]=p.expiryDate}
+    s._dues=dues;s._duesDate=toDMY(dd);saveStu();
+    queue(isDues?"payDues":"submitPayment",p);
+    sendWA(p.mobile,wa);
+    $("feeForm").innerHTML="";renderInfo();loadHistory();loadReport();toast("Device me save ho gaya — sheet me sync ho raha hai")}}
 $("btnAddPay").addEventListener("click",function(){payForm("add")});
 $("btnUpdDues").addEventListener("click",function(){payForm("dues")});
 
-// ================= DUES =================
-var duesRows=[],duesF="all";
-function loadDues(){$("duesList").innerHTML='<div class="muted">Loading...</div>';
-  api("getDues",{}).then(function(r){if(r.status!=="success")throw new Error(r.message||"Failed");duesRows=r.dues||[];$("cDues").textContent=duesRows.length+" pending";renderDues()}).catch(function(e){$("duesList").innerHTML='<div class="muted">'+esc(e.message)+"</div>"})}
+/* ================= DUES (built from the local student list) ================= */
+var duesF="all";
+function duesRows(){return students.filter(function(s){return due(s)>0}).map(function(s){return{regNo:g(s,F.reg),studentName:g(s,F.name),mobile:g(s,F.phone),altMobile:s["Alt Mobile"],dues:due(s),dueDate:s._duesDate,type:/monthly/i.test(s["Payment Settlement"])?"Monthly":"Admission"}})}
 function isOver(d){return d.dueDate&&toISO(d.dueDate)&&toISO(d.dueDate)<today()}
-function renderDues(){var q=$("duesSearch").value;
-  var over=duesRows.filter(isOver);
+function renderDues(){var q=$("duesSearch").value,all=duesRows(),over=all.filter(isOver);
   $("overdueAlert").innerHTML=over.length?'<div class="alert">⚠ '+over.length+" student(s) ka dues date nikal chuka hai: "+over.slice(0,5).map(function(d){return esc(d.studentName)}).join(", ")+(over.length>5?"...":"")+"</div>":"";
-  var rows=duesRows.filter(function(d){
-    if(duesF==="admission"&&!/admission/i.test(d.type))return false;if(duesF==="monthly"&&!/month/i.test(d.type))return false;if(duesF==="overdue"&&!isOver(d))return false;
+  var rows=all.filter(function(d){
+    if(duesF==="admission"&&d.type!=="Admission")return false;if(duesF==="monthly"&&d.type!=="Monthly")return false;if(duesF==="overdue"&&!isOver(d))return false;
     return matchStu({regNo:d.regNo,studentName:d.studentName,mobile:d.mobile,altMobile:d.altMobile},q)});
-  $("duesList").innerHTML=rows.length?'<table><tr><th>Reg No</th><th>Name</th><th>Phone</th><th>Type</th><th>Dues</th><th>Dues Date</th><th></th></tr>'+rows.map(function(d,i){
+  $("duesList").innerHTML=rows.length?'<table><tr><th>Reg No</th><th>Name</th><th>Phone</th><th>Type</th><th>Dues</th><th>Dues Date</th><th></th></tr>'+rows.map(function(d){
     return"<tr><td>"+esc(d.regNo)+"</td><td>"+esc(d.studentName)+"</td><td>"+esc(d.mobile)+"</td><td>"+esc(d.type)+'</td><td class="red">'+inr(d.dues)+"</td><td"+(isOver(d)?' class="red"':"")+">"+esc(d.dueDate||"—")+(isOver(d)?" ⚠":"")+'</td><td><button class="b ok" data-r="'+esc(d.regNo)+'">Update</button></td></tr>'}).join("")+"</table>":'<div class="muted">Koi dues nahi mila.</div>';
-  $("duesList").querySelectorAll("button").forEach(function(b){b.addEventListener("click",function(){
-    fetchStudents().then(function(){var s=students.filter(function(x){return g(x,F.reg)==b.dataset.r})[0];if(!s){toast("Student nahi mila");return}show("fees");pickStudent(s);payForm("dues");window.scrollTo(0,0)})})})}
+  $("duesList").querySelectorAll("button").forEach(function(b){b.addEventListener("click",function(){show("fees");pickStudent(byReg(b.dataset.r));payForm("dues");window.scrollTo(0,0)})})}
 $("duesSearch").addEventListener("input",renderDues);
 document.querySelectorAll("#duesFilters button").forEach(function(b){b.addEventListener("click",function(){duesF=b.dataset.f;document.querySelectorAll("#duesFilters button").forEach(function(x){x.classList.toggle("on",x===b)});renderDues()})});
 
-// ================= TOTAL STUDENTS =================
-function loadStudents(){$("stuList").innerHTML='<div class="muted">Loading...</div>';fetchStudents().then(renderStudents).catch(function(e){$("stuList").innerHTML='<div class="muted">'+esc(e.message)+"</div>"})}
+/* ================= TOTAL STUDENTS ================= */
 function renderStudents(){var q=$("stuSearch").value.toLowerCase();
   var rows=students.filter(function(s){return!q||headers.some(function(h){return String(s[h]).toLowerCase().indexOf(q)>-1})});
   $("stuList").innerHTML=rows.length?"<table><tr><th></th>"+headers.map(function(h){return"<th>"+esc(h)+"</th>"}).join("")+"</tr>"+rows.map(function(s){
-    return'<tr><td><button class="b" data-a="e" data-r="'+esc(g(s,F.reg))+'">Edit</button> <button class="b del" data-a="d" data-r="'+esc(g(s,F.reg))+'">Delete</button></td>'+headers.map(function(h){return"<td>"+esc(s[h])+"</td>"}).join("")+"</tr>"}).join("")+"</table>":'<div class="muted">Koi student nahi.</div>';
-  $("stuList").querySelectorAll("button").forEach(function(b){b.addEventListener("click",function(){var s=students.filter(function(x){return g(x,F.reg)==b.dataset.r})[0];
+    return'<tr><td><button class="b" data-a="e" data-r="'+esc(g(s,F.reg))+'">Edit</button> <button class="b del" data-a="d" data-r="'+esc(g(s,F.reg))+'">Delete</button></td>'+headers.map(function(h){return"<td>"+esc(s[h])+"</td>"}).join("")+"</tr>"}).join("")+"</table>":'<div class="muted">'+(students.length?"Koi student nahi.":"Student list abhi load nahi hui — pehli baar internet chahiye.")+"</div>";
+  $("stuList").querySelectorAll("button").forEach(function(b){b.addEventListener("click",function(){var reg=b.dataset.r,s=byReg(reg);
     if(b.dataset.a==="e")editStudent(s);
-    else if(ask("Kya aap sach mai is student ko delete karna chahte hai? Data Google Sheet se bhi hat jayega."))api("deleteStudent",{regNo:b.dataset.r}).then(function(r){toast(r.status==="success"?"Student deleted":r.message);loadStudents()})})})}
+    else if(confirm("Kya aap sach mai is student ko delete karna chahte hai? Data Google Sheet se bhi hat jayega.")){
+      students=students.filter(function(x){return g(x,F.reg)!=reg});saveStu();queue("deleteStudent",{regNo:reg});renderStudents();toast("Delete ho gaya — sheet me sync ho raha hai")}})})}
 $("stuSearch").addEventListener("input",renderStudents);
 function editStudent(s){
-  modal("<h3>Edit Student — "+esc(g(s,F.name))+"</h3><div class='grid'>"+headers.map(function(h,i){return"<div><label>"+esc(h)+"</label><input data-h='"+esc(h)+"' value='"+esc(s[h])+"'"+(F.reg.test(h)?" readonly":"")+"></div>"}).join("")+"</div><div class='row' style='margin-top:14px'><button class='b ok' id='mSave'>Save</button><button class='b' id='mCancel'>Cancel</button></div>");
+  modal("<h3>Edit Student — "+esc(g(s,F.name))+"</h3><div class='grid'>"+headers.map(function(h){return"<div><label>"+esc(h)+"</label><input data-h='"+esc(h)+"' value='"+esc(s[h])+"'"+(F.reg.test(h)?" readonly":"")+"></div>"}).join("")+"</div><div class='row' style='margin-top:14px'><button class='b ok' id='mSave'>Save</button><button class='b' id='mCancel'>Cancel</button></div>");
   $("mCancel").onclick=closeModal;
   $("mSave").onclick=function(){var d={};document.querySelectorAll("#modalBox input").forEach(function(i){d[i.dataset.h]=i.value});
-    api("updateStudent",{regNo:g(s,F.reg),data:d}).then(function(r){closeModal();toast(r.status==="success"?"Student updated":r.message);loadStudents()})}}
+    for(var k in d)if(!F.reg.test(k))s[k]=d[k];saveStu();queue("updateStudent",{regNo:g(s,F.reg),data:d});closeModal();renderStudents();toast("Saved — sheet me sync ho raha hai")}}
 
-// ---- init ----
-show("fees");loadReport();fetchStudents().catch(function(){});
+/* ---- init ---- */
+stuCounts();updSync();show("fees");loadReport();fetchStudents().then(refreshViews);flush();
 </script>
 </body>
 </html>
