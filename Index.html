@@ -1,0 +1,1415 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Spectrum Dance Academy — Admission Form</title>
+  <style>
+    :root{
+      --purple:#4a1a7a;
+      --purple-deep:#33115a;
+      --orange:#e85d25;
+      --gold:#f2b705;
+      --cream:#faf6ef;
+      --ink:#2a2130;
+      --line:#e4dcee;
+      --ok:#1e8f5f;
+      --err:#c0392b;
+      --info:#8a5a00;
+      --radius:10px;
+    }
+    *{box-sizing:border-box;}
+    body{
+      margin:0;
+      font-family:'Segoe UI',Tahoma,Verdana,sans-serif;
+      background:linear-gradient(180deg,var(--cream) 0%,#f2ecf9 100%);
+      color:var(--ink);
+      padding:0 0 40px;
+    }
+    .wrap{max-width:760px;margin:0 auto;padding:0 24px;}
+    /* ===== brand header: black + gold banner ===== */
+    header.brand{
+      position:relative;
+      background:#0d0d0d;
+      color:#fff;
+      padding:0;
+      border-radius:0 0 6px 6px;
+      overflow:hidden;
+      box-shadow:0 6px 18px rgba(0,0,0,.35);
+    }
+    /* gold arc sweeping across the top-left, like the banner art */
+    header.brand::before{content:none;}
+    header.brand::after{content:none;}
+    header.brand .brand-row{position:relative;z-index:3;display:block;}
+    header.brand img.brand-banner{
+      display:block;width:100%;max-width:100%;height:auto;
+      border-radius:0 0 4px 4px;
+    }
+
+    header.brand .titles{flex:1;min-width:0;text-align:center;padding-left:26px;}
+    header.brand .om{
+      margin:0 0 4px;font-size:11px;letter-spacing:3px;
+      color:#f2c14e;text-transform:uppercase;font-weight:700;
+    }
+    /* SPECTRUM wordmark, logo-style */
+    header.brand .wordmark{
+      margin:0;font-family:Georgia,'Times New Roman',serif;
+      font-weight:700;font-size:35px;letter-spacing:.5px;line-height:1;
+      color:#fff;
+    }
+    header.brand .wordmark .r{
+      background:linear-gradient(180deg,#f8de7e,#d9a520 60%,#b98a12);
+      -webkit-background-clip:text;background-clip:text;
+      color:transparent;
+    }
+    header.brand .subline{
+      position:relative;display:flex;align-items:center;justify-content:center;
+      gap:10px;margin:7px 0 0;
+    }
+    header.brand .subline i{
+      display:block;height:2px;width:34px;border-radius:2px;
+      background:linear-gradient(90deg,#f8de7e,#d9a520);
+    }
+    header.brand .subline span{
+      font-size:14.5px;font-weight:700;letter-spacing:3.2px;color:#fff;
+      white-space:nowrap;
+    }
+    header.brand .tagline{
+      margin:9px 0 0;font-family:'Brush Script MT','Segoe Script','Lucida Handwriting',cursive;
+      font-style:italic;font-size:19px;
+      background:linear-gradient(90deg,#f2c14e,#f8de7e,#d9a520);
+      -webkit-background-clip:text;background-clip:text;color:transparent;
+    }
+    /* address + phone strip */
+    .addr-bar{
+      background:#0d0d0d;border-top:2px solid #d9a520;border-bottom:2px solid #d9a520;
+      color:#fff;font-size:12.8px;font-weight:600;padding:11px 14px;margin:0 0 20px;
+      border-radius:0 0 6px 6px;display:flex;align-items:center;justify-content:center;
+      gap:14px;flex-wrap:wrap;text-align:center;
+    }
+    .addr-bar .pin{
+      width:22px;height:22px;flex-shrink:0;border-radius:50%;
+      background:#f2c14e;display:flex;align-items:center;justify-content:center;
+    }
+    .addr-bar .pin svg{width:13px;height:13px;}
+    .addr-bar .divider{width:1.6px;height:26px;background:#d9a520;border-radius:2px;}
+    .addr-bar .num{font-weight:800;letter-spacing:.4px;}
+    .section-band{
+      position:relative;height:46px;margin:26px 0 18px;display:flex;align-items:center;
+    }
+    .idcard-section .section-band{margin-top:0;}
+    .section-band .ribbon{
+      position:absolute;left:22px;top:0;right:0;height:100%;
+      background:linear-gradient(100deg,var(--purple) 0%,var(--purple-deep) 85%);
+      clip-path:polygon(0 0,93% 0,100% 50%,93% 100%,0 100%);
+      display:flex;align-items:center;padding-left:48px;
+      box-shadow:0 6px 14px rgba(74,26,122,.28);
+    }
+    .section-band .ribbon span{
+      color:#fff;font-weight:800;font-size:14.5px;letter-spacing:1.2px;text-transform:uppercase;
+    }
+    .section-band .sicon{
+      position:absolute;left:0;top:50%;transform:translateY(-50%);
+      width:44px;height:44px;border-radius:50%;z-index:2;
+      background:linear-gradient(135deg,var(--gold),var(--orange));
+      border:2.5px solid #fff;box-shadow:0 4px 10px rgba(232,93,37,.35);
+      display:flex;align-items:center;justify-content:center;
+    }
+    .section-band .sicon svg{width:21px;height:21px;stroke:#fff;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+    .section-band .sicon svg.filled{fill:#fff;stroke:none;}
+    .card{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:18px 16px;
+      box-shadow:0 4px 16px rgba(74,26,122,.06);
+    }
+    .ficon-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+    .ficon{
+      width:32px;height:32px;border-radius:50%;flex-shrink:0;
+      background:linear-gradient(135deg,var(--purple),var(--purple-deep));
+      display:flex;align-items:center;justify-content:center;
+      box-shadow:0 3px 8px rgba(74,26,122,.3);
+    }
+    .ficon svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
+    .ficon svg.filled{fill:#fff;stroke:none;}
+    .ficon-row label{margin-bottom:0 !important;}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+    /* ===== responsive ===== */
+    @media(max-width:760px){
+      header.brand{border-radius:0 0 8px 8px;}
+    }
+    @media(max-width:560px){
+      .grid{grid-template-columns:1fr;}
+      .field input,.field select,.field textarea{font-size:16px;}
+      .top-info{flex-direction:column;gap:12px;}
+      .idcard-pair{gap:16px;}
+      .idcard-pair .sc{transform:scale(.92);transform-origin:top center;}
+    }
+    @media(max-width:400px){
+      .idcard-pair .sc{transform:scale(.82);}
+      .submit-btn{font-size:15px;padding:13px;}
+    }
+    .field{margin-bottom:14px;}
+    .field label{
+      display:block;font-size:12.5px;font-weight:600;color:var(--purple-deep);
+      margin-bottom:5px;letter-spacing:.2px;
+    }
+    .field label .req{color:var(--orange);}
+    .field input[type=text],
+    .field input[type=tel],
+    .field input[type=number],
+    .field input[type=email],
+    .field select,
+    .field textarea{
+      width:100%;max-width:100%;padding:12px 10px;border:1.5px solid var(--line);
+      border-radius:8px;font-size:16px;background:#fff;color:var(--ink);font-family:inherit;
+    }
+    .field input:focus,.field select:focus,.field textarea:focus{
+      outline:2px solid var(--gold);outline-offset:1px;border-color:var(--purple);
+    }
+    .field input[readonly]{background:#f4f1fa;color:#655a78;}
+    .hint{font-size:11px;color:#8a7fa0;margin-top:4px;}
+    .dob-wrap{position:relative;}
+    .dob-wrap input[type=text]{padding-right:38px;cursor:pointer;background:#fff;}
+    .dob-cal-btn{
+      position:absolute;right:0;top:0;bottom:0;width:36px;
+      display:flex;align-items:center;justify-content:center;
+      background:transparent;border:none;cursor:pointer;color:var(--purple);
+      padding:0;pointer-events:none;
+    }
+    .dob-cal-btn svg{width:19px;height:19px;pointer-events:none;}
+    .dob-cal-btn:hover{color:var(--orange);}
+    .dob-hidden-date{
+      /* Covers the ENTIRE field so the tap lands directly on the real
+         <input type="date"> (needed for iOS Safari). */
+      position:absolute;left:0;top:0;width:100%;height:100%;
+      opacity:0;padding:0;border:0;cursor:pointer;margin:0;
+      -webkit-appearance:none;appearance:none;
+      z-index:2;
+    }
+    .err-text{font-size:11.5px;color:var(--err);margin-top:4px;display:none;}
+    .field.invalid input,.field.invalid select{border-color:var(--err);}
+    .field.invalid .err-text{display:block;}
+    #photoField.invalid{border-color:var(--err);}
+    textarea{min-height:56px;resize:vertical;}
+
+    .photo-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+    .btn-mini{background:#fff;border:1.5px solid var(--purple);color:var(--purple);
+      padding:12px 16px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;
+      min-height:44px;flex:1 1 auto;}
+    .btn-mini:hover{background:var(--purple);color:#fff;}
+    @media(max-width:420px){.photo-row{flex-direction:column;align-items:stretch;}}
+    @media(max-width:420px){.btn-mini{width:100%;}}
+    .btn-mini:hover{background:var(--purple);color:#fff;}
+    #photoPreview{width:56px;height:56px;border-radius:8px;object-fit:cover;border:1.5px solid var(--line);display:none;}
+    /* File inputs must NOT use display:none (iOS Safari refuses to open the picker). */
+    .visually-hidden-file{
+      position:absolute;
+      width:1px;height:1px;
+      padding:0;margin:-1px;
+      overflow:hidden;
+      clip:rect(0,0,0,0);
+      white-space:nowrap;
+      border:0;
+    }
+
+    .radio-group{display:flex;gap:18px;flex-wrap:wrap;padding-top:2px;}
+    .radio-group label{display:flex;align-items:center;gap:6px;font-size:13.5px;font-weight:500;color:var(--ink);}
+    .term-text{font-size:13px;margin-bottom:6px;color:var(--ink);}
+
+    .batch-info{font-size:12px;color:var(--purple);margin-top:4px;font-weight:600;}
+
+    .submit-btn{
+      width:100%;padding:14px;margin-top:24px;
+      background:linear-gradient(120deg,var(--orange),var(--gold));
+      color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:700;
+      letter-spacing:.5px;cursor:pointer;box-shadow:0 6px 16px rgba(232,93,37,.35);
+    }
+    .submit-btn:disabled{opacity:.6;cursor:not-allowed;}
+
+    .result-overlay{display:none;position:fixed;inset:0;background:rgba(20,10,30,.55);align-items:center;justify-content:center;z-index:9999;padding:20px;}
+    .result-overlay.show{display:flex;}
+    .result-card{background:#fff;border-radius:14px;padding:26px 22px 20px;max-width:420px;width:100%;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.28);}
+    .result-card h3{margin:0 0 6px;}
+    .result-card.ok h3{color:var(--ok);}
+    .result-card.error h3{color:var(--err);}
+    .result-card.dup h3{color:var(--info);}
+    .result-ok-btn{margin-top:16px;background:var(--purple);color:#fff;border:none;border-radius:8px;padding:10px 30px;font-weight:700;cursor:pointer;font-size:15px;}
+    .result-ok-btn:hover{background:var(--purple-deep);}
+
+    .top-info{display:flex;gap:14px;margin-top:16px;}
+    .top-info .field{flex:1;margin-bottom:0;}
+
+    /* ---- Academy Rules popup ---- */
+    .rules-link{
+      background:none;border:none;padding:0;margin:0 0 6px;
+      font:inherit;font-size:13px;color:var(--purple);
+      text-decoration:underline;cursor:pointer;text-align:left;
+    }
+    .rules-link:hover{color:var(--orange);}
+    .rules-link .tap-hint{display:block;font-size:11px;color:var(--info);text-decoration:none;margin-top:2px;}
+
+    .agree-status{font-size:13px;color:var(--info);margin-top:12px;}
+    .agree-status.done{color:var(--ok);font-weight:600;}
+
+    .rules-overlay{display:none;position:fixed;inset:0;background:rgba(20,10,30,.6);align-items:center;justify-content:center;z-index:10000;padding:16px;}
+    .rules-overlay.show{display:flex;}
+    .rules-box{background:#fff;border-radius:14px;width:100%;max-width:640px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 14px 44px rgba(0,0,0,.3);}
+    .rules-head{background:linear-gradient(120deg,var(--purple),var(--purple-deep));color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px;}
+    .rules-head h3{margin:0;font-size:15px;letter-spacing:.5px;flex:1;}
+    .rules-close{background:rgba(255,255,255,.18);border:none;color:#fff;font-size:20px;line-height:1;width:30px;height:30px;border-radius:50%;cursor:pointer;}
+    .rules-body{overflow-y:auto;padding:16px 18px;flex:1;-webkit-overflow-scrolling:touch;}
+    .rules-body h4{margin:18px 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--purple);border-bottom:1px solid var(--line);padding-bottom:5px;}
+    .rules-body h4:first-child{margin-top:0;}
+    .rules-body p{margin:0 0 10px;font-size:13px;line-height:1.55;}
+    .rules-body p strong{color:var(--purple-deep);}
+    .rules-body ul{margin:0 0 10px;padding-left:18px;font-size:13px;line-height:1.55;}
+    .rules-end{text-align:center;font-size:12px;color:var(--ok);font-weight:600;margin:14px 0 4px;}
+    .rules-foot{border-top:1px solid var(--line);padding:12px 16px;background:var(--cream);}
+    .scroll-note{font-size:12.5px;color:var(--info);text-align:center;margin:0;}
+    .rules-agree-row{display:none;align-items:flex-start;gap:10px;cursor:pointer;font-size:13.5px;color:var(--purple);}
+    .rules-agree-row.show{display:flex;}
+    .rules-agree-row input{width:19px;height:19px;flex-shrink:0;margin-top:1px;}
+
+    /* =====================================================================
+       STUDENT ID CARD — wrapper styles. Card ka design neeche ID card
+       block ke andar ke <style> mein hai (.sc classes).
+       ===================================================================== */
+    .idcard-section{display:none;margin-top:30px;}
+    /* Submit ke time card screen ke bahar render hota hai taaki image ban sake */
+    .idcard-section.offscreen{display:block;position:absolute;left:-10000px;top:0;width:640px;}
+    .idcard-section .section-title{margin-top:0;}
+    .idcard-pair{display:flex;flex-wrap:wrap;gap:22px;justify-content:center;padding:6px 0 14px;}
+    .idcard-actions{display:flex;justify-content:center;gap:10px;margin-top:6px;}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header class="brand">
+    <div class="brand-row" style="display:block;">
+      <!-- Index header: banner.png -> 1522 x 488 px (3.12:1). White area cropped. -->
+      <img class="brand-banner" src="banner.png" alt="Spectrum Dance Academy">
+    </div>
+    </div>
+  </header>
+
+  <form id="admissionForm" novalidate>
+    <div class="top-info card">
+      <div class="field">
+        <div class="ficon-row"><div class="ficon"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg></div><label>Registration No.</label></div>
+        <input type="text" id="regNo" readonly placeholder="Generating...">
+        <div class="hint">Auto-generated serial-wise. Final number is confirmed when you submit.</div>
+        <div class="err-text">Please enter a Registration No.</div>
+      </div>
+      <div class="field">
+        <div class="ficon-row"><div class="ficon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9.5h18M7 3v4M17 3v4"/></svg></div><label>Admission Date</label></div>
+        <input type="text" id="admissionDate" readonly>
+      </div>
+    </div>
+
+    <div class="section-band">
+      <div class="ribbon"><span>Student Details</span></div>
+      <div class="sicon"><svg viewBox="0 0 24 24" class="filled"><path d="M12 3 1 9l11 6 9-4.9V17h2V9L12 3zM5 13.2V17c0 1.7 3.1 3 7 3s7-1.3 7-3v-3.8l-7 3.8-7-3.8z"/></svg></div>
+    </div>
+    <div class="card grid">
+      <div class="field">
+        <label>Student Name <span class="req">*</span></label>
+        <input type="text" id="studentName" required>
+        <div class="err-text">Please enter the student's name.</div>
+      </div>
+      <div class="field">
+        <label>Date of Birth (dd/mm/yyyy) <span class="req">*</span></label>
+        <div class="dob-wrap">
+          <input type="text" id="dob" placeholder="dd/mm/yyyy" maxlength="10" readonly inputmode="none" autocomplete="off" required>
+          <input type="date" id="dobPicker" class="dob-hidden-date" aria-label="Pick date of birth" max="">
+          <button type="button" class="dob-cal-btn" id="dobCalBtn" tabindex="-1" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.6"/>
+              <path d="M3 9.5H21" stroke="currentColor" stroke-width="1.6"/>
+              <path d="M7 3V6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+              <path d="M17 3V6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+        <div class="err-text">Enter a valid date as dd/mm/yyyy.</div>
+      </div>
+      <div class="field">
+        <label>Mobile No. <span class="req">*</span></label>
+        <input type="tel" id="mobile" maxlength="10" inputmode="numeric" required>
+        <div class="err-text">Enter a valid 10-digit mobile number.</div>
+      </div>
+      <div class="field">
+        <label>Alternate No. (optional)</label>
+        <input type="tel" id="altMobile" maxlength="10" inputmode="numeric">
+        <div class="err-text">Enter a valid 10-digit number.</div>
+      </div>
+      <div class="field">
+        <label>Student Occupation <span class="req">*</span></label>
+        <input type="text" id="studentOccupation" placeholder="e.g. Student / Working / Business" required>
+        <div class="err-text">Please fill this field.</div>
+      </div>
+      <div class="field">
+        <label>Email <span class="req">*</span></label>
+        <input type="email" id="email" required>
+        <div class="err-text">A valid email is required — your admission confirmation and PDF are sent here.</div>
+      </div>
+    </div>
+
+    <div class="section-band">
+      <div class="ribbon"><span>Photo <span style="color:#ffd27a;">*</span></span></div>
+      <div class="sicon"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-2h6l2 2h3v11H4z"/><circle cx="12" cy="14" r="3.5"/></svg></div>
+    </div>
+    <div class="card field" id="photoField">
+      <div class="photo-row">
+        <button type="button" class="btn-mini" id="btnCamera">Take Photo</button>
+        <button type="button" class="btn-mini" id="btnGallery">Choose from Gallery</button>
+        <img id="photoPreview" alt="preview">
+        <input type="file" id="fileCamera" accept="image/*" capture="environment" class="visually-hidden-file">
+        <input type="file" id="fileGallery" accept="image/*" class="visually-hidden-file">
+      </div>
+      <div class="hint">Photo is required. Take a photo with your camera or choose one from your gallery.</div>
+      <div class="err-text">Please add a photo — take one from camera or choose from gallery — before submitting.</div>
+    </div>
+
+    <div class="section-band">
+      <div class="ribbon"><span>Guardian Details</span></div>
+      <div class="sicon"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.5 2.7-5.5 6-5.5s6 2 6 5.5"/><circle cx="17.5" cy="9" r="2.4"/><path d="M14.5 20c.3-2.7 2-4.3 4.2-4.3 1.4 0 2.6.6 3.3 1.6"/></svg></div>
+    </div>
+    <div class="card grid">
+      <div class="field">
+        <label>Father Name <span class="req">*</span></label>
+        <input type="text" id="guardianName" required>
+        <div class="err-text">Please fill this field.</div>
+      </div>
+      <div class="field">
+        <label>Mother Name <span class="req">*</span></label>
+        <input type="text" id="guardianRelation" required>
+        <div class="err-text">Please fill this field.</div>
+      </div>
+      <div class="field">
+        <label>Guardian Occupation <span class="req">*</span></label>
+        <input type="text" id="guardianOccupation" required>
+        <div class="err-text">Please fill this field.</div>
+      </div>
+      <div class="field">
+        <label>Guardian Mobile No. <span class="req">*</span></label>
+        <input type="tel" id="guardianMobile" maxlength="10" inputmode="numeric" required>
+        <div class="err-text">Enter a valid 10-digit mobile number.</div>
+      </div>
+    </div>
+
+    <div class="section-band">
+      <div class="ribbon"><span>Address &amp; ID</span></div>
+      <div class="sicon"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7"/><path d="M6 10v9h12v-9"/><path d="M10 19v-5h4v5"/></svg></div>
+    </div>
+    <div class="card">
+      <div class="field">
+        <label>Present Address <span class="req">*</span></label>
+        <textarea id="presentAddress" required></textarea>
+        <div class="err-text">Please enter the present address.</div>
+      </div>
+      <div class="field">
+        <label>Permanent Address</label>
+        <textarea id="currentAddress"></textarea>
+      </div>
+      <div class="field">
+        <label>Aadhar No. <span class="req">*</span></label>
+        <input type="text" id="aadhar" maxlength="12" inputmode="numeric" required>
+        <div class="err-text">Enter a valid 12-digit Aadhar number.</div>
+      </div>
+    </div>
+
+    <div class="section-band">
+      <div class="ribbon"><span>Course Details</span></div>
+      <div class="sicon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></div>
+    </div>
+    <div class="card grid">
+      <div class="field">
+        <label>Interested For <span class="req">*</span></label>
+        <select id="interestedFor" required>
+          <option value="">Select</option>
+          <option>Dance</option>
+          <option>Fitness</option>
+          <option>Singing</option>
+          <option>Guitar</option>
+          <option>Acting</option>
+          <option>Painting</option>
+          <option>Modeling</option>
+        </select>
+        <div class="err-text">Please select an option.</div>
+      </div>
+      <div class="field">
+        <label>Batch Time <span class="req">*</span></label>
+        <select id="batchTime" required>
+          <option value="">Select interest first</option>
+        </select>
+        <div class="batch-info" id="batchDaysInfo"></div>
+        <div class="err-text">Please select a batch.</div>
+      </div>
+      <div class="field">
+        <label>Duration <span class="req">*</span></label>
+        <input type="number" id="duration" min="1" required>
+        <div class="err-text">Enter a valid number.</div>
+      </div>
+      <div class="field">
+        <label>Duration Type <span class="req">*</span></label>
+        <select id="durationType" required>
+          <option value="">Select</option>
+          <option value="Day">Day</option>
+          <option value="Month">Month</option>
+          <option value="Year">Year</option>
+        </select>
+        <div class="err-text">Please select duration type.</div>
+      </div>
+      <div class="field">
+        <label>Expiry Date</label>
+        <input type="text" id="expiryDate" readonly placeholder="Auto-calculated">
+      </div>
+      <div class="field">
+        <label>Payment Settlement <span class="req">*</span></label>
+        <select id="paymentSettlement" required>
+          <option value="">Select</option>
+          <option>One Time</option>
+          <option>Installment</option>
+          <option>Monthly</option>
+        </select>
+        <div class="err-text">Please select payment settlement.</div>
+      </div>
+    </div>
+
+    <div class="section-band">
+      <div class="ribbon"><span>Terms &amp; Conditions</span></div>
+      <div class="sicon"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 5-3.5 7.5-7 9-3.5-1.5-7-4-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg></div>
+    </div>
+    <div class="card">
+      <p class="term-text">Your money will not be refundable.</p>
+      <button type="button" class="rules-link" id="openRulesBtn">
+        You have to follow the rules of this academy.
+        <span class="tap-hint">Tap here to read the Academy Rules &amp; accept. <span class="req">*</span></span>
+      </button>
+      <div class="field" id="agreeField">
+        <div class="agree-status" id="agreeStatus">Not accepted yet — please open the rules above.</div>
+        <input type="checkbox" id="agreeTerms" style="display:none;">
+        <div class="err-text">Please read the Academy Rules and accept them to continue.</div>
+      </div>
+    </div>
+
+    <button type="submit" class="submit-btn" id="submitBtn">Submit Admission Form</button>
+  </form>
+</div>
+
+<div id="rulesOverlay" class="rules-overlay">
+  <div class="rules-box">
+    <div class="rules-head">
+      <h3>ACADEMY RULES</h3>
+      <button type="button" class="rules-close" id="rulesCloseBtn" aria-label="Close">&times;</button>
+    </div>
+
+    <div class="rules-body" id="rulesBody">
+      <h4>General Rules</h4>
+      <p><strong>1. Maintain Silence and Discipline in Class</strong><br>Students must maintain silence and discipline in the classroom. When the teacher is conducting the class, students must not discuss or talk with anyone unnecessarily.</p>
+      <p><strong>2. ID Card</strong><br>Bringing and wearing the Academy ID Card is compulsory.</p>
+      <p><strong>3. Absence Without Prior Information</strong><br>If a student remains absent without informing the Director (Sir), a fine of ₹20 per day will be charged. If a student requires leave for more than 2 days, they must submit a written leave application to the Director (Sir).</p>
+      <p><strong>4. Absence for More Than 5 Days</strong><br>If a student remains absent for more than 5 days without informing the Director, their registration will become invalid. If they wish to continue attending classes, they will have to complete the re-registration process.</p>
+      <p><strong>5. Punctuality and Late Arrival</strong><br>Students must arrive 5 minutes before their scheduled class time. A fine of ₹10 will be charged for arriving more than 5 minutes after the class has started. No excuse for late arrival will be accepted. Students should inform the Director (Sir) in advance if they expect to be late.</p>
+      <p><strong>6. Office Rules</strong><br>Students are strictly prohibited from sitting in the Academy Office without the permission of the Director (Sir).</p>
+      <p><strong>7. Bringing Friends to Class/Office</strong><br>Students must not bring friends along to the classroom or office. Violation of this rule may result in disciplinary action.</p>
+      <p><strong>8. Respectful Behaviour Towards Teachers</strong><br>Students must maintain good manners and respectful behaviour towards their teachers.</p>
+      <p><strong>9. Discipline and Respect Among Classmates</strong><br>Students must maintain discipline in class and behave respectfully with their classmates. All students must treat one another with dignity and respect.</p>
+      <p><strong>10. Electronic Devices</strong><br>Students are not permitted to take or use electronic devices such as mobile phones, laptops, etc. in the classroom. Students must deposit their mobile phones with their teacher upon entering the class.</p>
+      <p><strong>11. Misbehaviour</strong><br>If a student misbehaves with a teacher or the Director, they may be removed from the Academy.</p>
+      <p><strong>12. Complaints and Problems</strong><br>If a student faces any problem or has any complaint, they should report it to the Academy Director.<br>Director: Pankaj Kumar Azad</p>
+      <p><strong>13. Photography and Videography</strong><br>No student may take photographs or videos without the permission of the teacher. Students must follow the Academy's instructions regarding photography and videography.</p>
+      <p><strong>14. Exchange of Mobile Numbers</strong><br>Students must not exchange mobile numbers with classmates without informing the Director (Sir).</p>
+      <p><strong>15. Comments on Classmates</strong><br>Students must not make inappropriate comments about their classmates. Violation of this rule may result in disciplinary action.</p>
+      <p><strong>16. Leaving the Academy After Class</strong><br>Students must leave the Academy within 5 minutes after the class ends.</p>
+      <p><strong>17. Leaving the Academy Together</strong><br>Male and female students must not leave the Academy premises together.</p>
+      <p><strong>18. Permission During Class</strong><br>If a student needs to do anything during class, they must first take permission from the Director/teacher. This includes drinking water, attending to an urgent matter, or dealing with any other problem.</p>
+      <p><strong>19. Use of Academy Property</strong><br>Students must not use any Academy property without the permission of the Director (Pankaj Sir). Examples: Sound Box, Paper, Guitar, etc.</p>
+
+      <h4>Monthly Fee Rules</h4>
+      <p><strong>20. Monthly Fee Payment</strong><br>The monthly fee must be deposited between the 1st and 10th of every month. If the fee is not paid by the 10th, a late fee of ₹50 for every 5 days will be charged.</p>
+      <p><strong>21. Difficulty in Paying Monthly Fees</strong><br>If a student faces any difficulty in paying the monthly fee, they must submit an application to the Director (Pankaj Sir) stating the appropriate reason. The request will be valid only after approval by the Director.</p>
+      <p><strong>22. Continuous Absence</strong><br>If a student remains absent continuously for 3 months, they will have to complete the re-registration process.</p>
+
+      <h4>Dance Class Rules</h4>
+      <p><strong>23. Dance Dress Code</strong><br>Students must not enter the classroom without the prescribed dance dress/uniform. Students must change into their class clothes before the class starts.</p>
+      <p><strong>Dance Class Structure</strong></p>
+      <ul>
+        <li>Total Class Duration: 1 hour 30 minutes</li>
+        <li>30 minutes: Workout / Exercise</li>
+        <li>30 minutes: Basic Training</li>
+        <li>30 minutes: Song Practice / Dance</li>
+      </ul>
+      <p><strong>Dance Class Timings</strong></p>
+      <ul>
+        <li>Morning: 6:00 AM – 11:00 AM</li>
+        <li>Evening: 3:00 PM – 8:00 PM</li>
+      </ul>
+      <p><strong>24. Dance Practice</strong><br>Students must not practise dance to any song other than the song instructed/approved by the Director (Sir).</p>
+
+      <h4>Disciplinary Rule</h4>
+      <p><strong>25. Violation of Rules</strong><br>If a student is found violating any of the above rules, they will be subject to disciplinary action.</p>
+
+      <h4>Singer Class</h4>
+      <p><strong>26. Singer Teacher Class Timings</strong></p>
+      <ul>
+        <li>Sunday: 3:30 PM – 5:30 PM</li>
+        <li>Thursday: 1:30 PM – 3:30 PM</li>
+      </ul>
+      <p>Practice Timing: 1:30 PM – 3:30 PM<br>Singing Class Closure: Sunday to Monday (Wednesday) — as stated in the original schedule.</p>
+
+      <h4>Guitar Class</h4>
+      <p><strong>27. Guitar Class Timings</strong></p>
+      <ul>
+        <li>Sunday: 1:30 PM – 3:30 PM</li>
+        <li>Wednesday: 1:30 PM – 3:30 PM</li>
+      </ul>
+
+      <h4>Important</h4>
+      <p>All students are expected to follow the Academy Rules, maintain discipline, and respect the Director, teachers, staff, and fellow students.</p>
+
+      <p class="rules-end">— End of Academy Rules —</p>
+    </div>
+
+    <div class="rules-foot">
+      <p class="scroll-note" id="scrollNote">Please scroll down and read all the rules to continue.</p>
+      <label class="rules-agree-row" id="rulesAgreeRow">
+        <input type="checkbox" id="rulesAgreeBox">
+        <span>I agree to read the above Terms &amp; Conditions. <span class="req">*</span></span>
+      </label>
+    </div>
+  </div>
+</div>
+
+<div id="resultOverlay" class="result-overlay">
+  <div id="resultCard" class="result-card">
+    <div id="resultContent"></div>
+    <button type="button" id="resultOkBtn" class="result-ok-btn">OK</button>
+  </div>
+</div>
+
+<!-- ======================= STUDENT ID CARD (front + back) =======================
+     Submit par ye card screen ke bahar bharke PNG bana diya jaata hai, aur wahi
+     PNG PDF ke page 2 (front) & page 3 (back) par jaati hai.
+     Submit ke baad ye screen par bhi dikhta hai. -->
+<style>
+  .sc{position:relative;width:255px;height:404px;border-radius:16px;overflow:hidden;background:#fff;
+    border:1px solid #ddd;font-family:Arial,Helvetica,sans-serif;box-sizing:border-box;flex-shrink:0;color:#111;}
+  .sc *{box-sizing:border-box;}
+  .sc-bg{position:absolute;top:0;left:0;width:255px;height:404px;z-index:0;}
+  .sc-abs{position:absolute;z-index:2;}
+  .sc-slot{position:absolute;top:10px;left:50%;width:64px;height:14px;margin-left:-32px;border-radius:8px;z-index:3;
+    background:linear-gradient(180deg,#b9b9c0,#efeff3);border:1px solid #d6d6dc;}
+  .sc-logo{left:12px;top:29px;width:65px;height:65px;border-radius:50%;object-fit:cover;display:block;}
+  .sc-banner{position:absolute;left:0;top:0;width:255px;height:107px;object-fit:cover;object-position:top;z-index:1;display:block;}
+  .sc-photo{left:77px;top:131px;width:101px;height:105px;border:1.8px solid #d4a72c;border-radius:8px;overflow:hidden;background:#eee;}
+  .sc-photo img{width:100%;height:100%;object-fit:cover;display:block;}
+  .sc-dancer{position:absolute;z-index:1;display:block;object-fit:contain;opacity:.28;}
+  #idcardDancerFront{left:183px;top:112px;width:64px;height:130px;object-position:bottom;}
+  #idcardDancerBack{left:172px;top:188px;width:80px;height:130px;object-position:bottom;}
+  .sc-name{left:0;width:236px;top:239px;text-align:center;font-size:18px;line-height:22px;font-weight:900;color:#111;letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 6px;}
+  .sc-rows{left:30px;top:263px;width:217px;border-collapse:collapse;table-layout:fixed;}
+  .sc-rows td{padding:0;font-size:9.5px;line-height:13px;color:#111;vertical-align:top;font-weight:600;}
+  .sc-rows td.l{width:78px;white-space:nowrap;}
+  .sc-rows td.c{width:12px;}
+  .sc-life{left:56px;top:366px;font-family:"Brush Script MT","Segoe Script",cursive;font-style:italic;font-size:20px;line-height:22px;color:#111;transform:rotate(-8deg);transform-origin:left center;white-space:nowrap;}
+  .sc-life i{display:block;width:96px;height:2px;margin-top:2px;background:linear-gradient(90deg,#c99a1e,#f6d675);border-radius:2px;}
+  /* back */
+  .sc-ic{position:absolute;z-index:2;width:22px;height:22px;border-radius:50%;background:#111;border:1.5px solid #d4a72c;display:flex;align-items:center;justify-content:center;}
+  .sc-ic svg{position:static;width:13px;height:13px;display:block;}
+  .sc-ic img{position:static;width:13px;height:13px;display:block;}
+  .sc-addr{left:40px;top:118px;width:200px;font-size:9.5px;line-height:1.35;font-weight:700;color:#111;}
+  .sc-insta{left:40px;top:190px;font-size:10.5px;font-weight:800;color:#111;letter-spacing:.2px;}
+  .sc-phone{left:40px;top:163px;font-size:10.5px;font-weight:800;color:#111;letter-spacing:.2px;}
+  .sc-hr{left:14px;top:218px;width:200px;height:1.5px;background:linear-gradient(90deg,#c99a1e,#f6d675,#c99a1e);}
+  .sc-keep{display:block;position:absolute;left:50%;top:222px;width:210px;
+    transform:translateX(-50%) rotate(-3deg);transform-origin:center center;
+    text-align:center;z-index:2;}
+  .sc-keep .ln{font-family:"Brush Script MT","Segoe Script","Lucida Handwriting",cursive;font-style:italic;
+    font-weight:700;color:#111;white-space:nowrap;font-size:19px;line-height:1.15;
+    display:block;width:max-content;margin:0 auto;}
+  .sc-keep .ln2{margin-left:0;}
+  .sc-keep svg{display:block;width:180px;height:14px;margin:4px auto 0;}
+  .sc-qr{left:14px;top:290px;width:56px;height:56px;display:block;}
+  .sc-qrdiv{left:78px;top:292px;width:1.5px;height:50px;background:#d4a72c;}
+  .sc-qrt{left:88px;top:301px;}
+  .sc-qrt b{display:block;font-size:12.5px;letter-spacing:.6px;color:#111;}
+  .sc-qrt span{display:block;font-size:10px;font-weight:600;color:#111;margin-top:3px;}
+  .sc-vals{left:0;right:0;top:358px;height:46px;}
+  .sc-founder{left:170px;top:325px;width:85px;text-align:center;}
+  .sc-founder .fn{font-size:9px;font-weight:800;color:#111;line-height:11px;display:block;white-space:nowrap;}
+  .sc-founder .ft{font-size:7.5px;font-weight:600;color:#8a6410;letter-spacing:.4px;display:block;margin-top:1px;text-transform:uppercase;}
+  .sc-val{position:absolute;top:0;width:85px;text-align:center;color:#fff;font-size:6.5px;font-weight:700;letter-spacing:.3px;}
+  .sc-val .o{width:22px;height:22px;margin:0 auto 4px;border-radius:50%;border:1.5px solid #d4a72c;background:#111;position:relative;display:flex;align-items:center;justify-content:center;}
+  .sc-val .o svg{position:static;width:12px;height:12px;display:block;}
+  .sc-val .o img{position:static;width:12px;height:12px;display:block;}
+</style>
+
+<div class="wrap idcard-section offscreen" id="idCardSection">
+  <h2 class="section-title">Your Student ID Card</h2>
+  <div class="idcard-pair">
+
+<!-- ================= FRONT ================= -->
+    <div class="sc" id="idcardFront">
+      <svg class="sc-bg" viewBox="0 0 255 404">
+        <defs>
+          <linearGradient id="scGold" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#b98a12"/><stop offset=".5" stop-color="#f8de7e"/><stop offset="1" stop-color="#b98a12"/>
+          </linearGradient>
+          <radialGradient id="scSmoke" gradientUnits="userSpaceOnUse" cx="218" cy="190" r="88">
+            <stop offset="0" stop-color="#2b2b2b" stop-opacity=".35"/>
+            <stop offset=".55" stop-color="#6e6e6e" stop-opacity=".18"/>
+            <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <rect width="255" height="404" fill="#fff"/>
+        <rect x="100" y="100" width="155" height="200" fill="url(#scSmoke)"/>
+        <!-- black header, bottom edge follows the gold border lines into the banner -->
+        <path d="M0,0 H255 V107 L218,115 H44 L0,93 Z" fill="#0d0d0d"/>
+        <path d="M0,93 L44,115" stroke="url(#scGold)" stroke-width="2.6" fill="none"/>
+        <path d="M0,99 L38,118" stroke="#d4a72c" stroke-width="1" fill="none"/>
+        <path d="M255,107 L218,115" stroke="url(#scGold)" stroke-width="2.6" fill="none"/>
+        <path d="M255,112 L222,119" stroke="#d4a72c" stroke-width="1" fill="none"/>
+        <!-- banner joined to both gold lines -->
+        <path d="M40,115 L49,104 H213 L222,115 L213,125.5 H49 Z" fill="url(#scGold)"/>
+        <path d="M49,104 H213 M49,125.5 H213" stroke="#8a6410" stroke-width=".8" fill="none"/>
+        <text x="59" y="120.7" font-family="Arial,Helvetica,sans-serif" font-weight="900" font-size="14" fill="#1a1a1a" textLength="146" lengthAdjust="spacingAndGlyphs">STUDENT ID CARD</text>
+        
+        <!-- Banner is now a plain HTML <img> right after this SVG (see .sc-banner below) —
+             html2canvas cannot reliably capture <image> tags nested inside inline SVG,
+             which is why the banner used to disappear from the downloaded PNG. -->
+        <!-- bottom corners -->
+        <path d="M0,336 L0,404 H68 Z" fill="#0d0d0d"/>
+        <path d="M0,340 L76,404" stroke="url(#scGold)" stroke-width="3" fill="none"/>
+        <path d="M0,347 L58,396" stroke="#d4a72c" stroke-width="1" fill="none"/>
+        <path d="M255,344 L255,404 H150 Z" fill="#0d0d0d"/>
+        <path d="M255,342 L146,404" stroke="url(#scGold)" stroke-width="3" fill="none"/>
+        <path d="M255,349 L160,404" stroke="#d4a72c" stroke-width="1" fill="none"/>
+      </svg>
+      <img class="sc-dancer" src="dancer.png" alt="" id="idcardDancerFront">
+      <img class="sc-banner" src="card-banner.png" alt="" id="idcardBannerFront">
+      <div class="sc-slot"></div>
+      
+      
+      <div class="sc-abs sc-photo"><img alt="student photo" id="idcardPhotoImg"></div>
+      <div class="sc-abs sc-name" id="idcardName"></div>
+      <table class="sc-abs sc-rows">
+        <tr><td class="l">Register No</td><td class="c">:</td><td id="idcardRegNo"></td></tr>
+        <tr><td class="l">Mobile</td><td class="c">:</td><td id="idcardMobile"></td></tr>
+        <tr><td class="l">DOB</td><td class="c">:</td><td id="idcardDob"></td></tr>
+        <tr><td class="l">Interested For</td><td class="c">:</td><td id="idcardInterest"></td></tr>
+        <tr><td class="l">Admission Date</td><td class="c">:</td><td id="idcardAdmissionDate"></td></tr>
+        <tr><td class="l">Address</td><td class="c">:</td><td id="idcardAddress"></td></tr>
+      </table>
+      <div class="sc-abs sc-life">Dance is Life<i></i></div>
+    </div>
+
+    
+  </div>
+  <div class="slotwrap">
+    <p class="label">Back</p>
+<!-- ================= BACK ================= -->
+    <div class="sc" id="idcardBack">
+      <svg class="sc-bg" viewBox="0 0 255 404">
+        <rect width="255" height="404" fill="#fff"/>
+        <path d="M0,0 H255 V107 Q128,93 0,115 Z" fill="#0d0d0d"/>
+        <path d="M0,115 Q128,93 255,107" stroke="#d4a72c" stroke-width="1.5" fill="none"/>
+
+        <!-- Banner + dancer are now plain HTML <img> tags right after this SVG (see .sc-banner / .sc-dancer below) —
+             html2canvas cannot reliably capture <image> tags nested inside inline SVG,
+             which is why they used to disappear from the downloaded PNG. -->
+
+        <path d="M0,344 Q120,372 255,346 V404 H0 Z" fill="#0d0d0d"/>
+        <path d="M0,354 Q120,382 255,352" stroke="#d4a72c" stroke-width="2.5" fill="none"/>
+      </svg>
+      <img class="sc-dancer" src="dancer.png" alt="" id="idcardDancerBack">
+      <img class="sc-banner" src="card-banner.png" alt="" id="idcardBannerBack">
+      <div class="sc-slot"></div>
+      
+
+      <div class="sc-ic" style="left:12px;top:120px;"><svg viewBox="0 0 24 24" width="13" height="13" xmlns="http://www.w3.org/2000/svg"><path fill="#f2c94c" d="M12 2C8.1 2 5 5.1 5 9c0 5.3 7 13 7 13s7-7.7 7-13c0-3.9-3.1-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg></div>
+      <div class="sc-abs sc-addr">1st Floor, Sumitra Market, Beside Gopal Market, Opposite Bank of Baroda, Naya Tola, Patna – 800004</div>
+
+      <div class="sc-ic" style="left:12px;top:160px;"><svg viewBox="0 0 24 24" width="13" height="13" xmlns="http://www.w3.org/2000/svg"><path fill="#f2c94c" d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1l-2.3 2.2z"/></svg></div>
+      <div class="sc-abs sc-phone">8935964374 &nbsp;|&nbsp; 9162701296</div>
+
+      
+      <div class="sc-ic" style="left:12px;top:187px;"><svg viewBox="0 0 24 24" width="13" height="13" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="#f2c94c" stroke-width="2.2"/><circle cx="12" cy="12" r="4.2" fill="none" stroke="#f2c94c" stroke-width="2.2"/><circle cx="17.2" cy="6.8" r="1.4" fill="#f2c94c"/></svg></div>
+      <div class="sc-abs sc-insta">@spectrumdanceacademy</div>
+
+      <div class="sc-abs sc-hr"></div>
+      <div class="sc-keep">
+        <div class="ln">Keep Dancing</div>
+        <div class="ln ln2">Keep Shining</div>
+        <svg viewBox="0 0 196 14" xmlns="http://www.w3.org/2000/svg">
+          <defs><linearGradient id="scKeepGold" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#f6d675"/><stop offset="1" stop-color="#c99a1e"/>
+          </linearGradient></defs>
+          <path d="M2,4 Q98,16 194,1" stroke="url(#scKeepGold)" stroke-width="3" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+
+      
+
+      <img class="sc-abs sc-qr" id="idcardQr" src="" alt="QR">
+      <div class="sc-abs sc-qrdiv"></div>
+      <div class="sc-abs sc-qrt"><b>SPECTRUM</b><span>DANCE ACADEMY</span></div>
+      <div class="sc-abs sc-founder"><span class="fn">Pankaj Kumar</span><span class="ft">Founder</span></div>
+
+      <div class="sc-abs sc-vals">
+        <div class="sc-val" style="left:0;">
+          <div class="o"><svg viewBox="0 0 24 24" width="12" height="12" xmlns="http://www.w3.org/2000/svg"><path fill="#f2c94c" d="M12 3 1 9l11 6 9-4.9V17h2V9L12 3zM5 13.2V17c0 1.7 3.1 3 7 3s7-1.3 7-3v-3.8l-7 3.8-7-3.8z"/></svg></div>DISCIPLINE
+        </div>
+        <div class="sc-val" style="left:85px;">
+          <div class="o"><svg viewBox="0 0 24 24" width="12" height="12" xmlns="http://www.w3.org/2000/svg"><path fill="#f2c94c" d="M12 2l3 6.9 7.5.7-5.7 5 1.7 7.4L12 18l-6.5 4 1.7-7.4-5.7-5 7.5-.7z"/></svg></div>CONFIDENCE
+        </div>
+        <div class="sc-val" style="left:170px;">
+          <div class="o"><svg viewBox="0 0 24 24" width="12" height="12" xmlns="http://www.w3.org/2000/svg"><path fill="#f2c94c" d="M12 21s-8-5.3-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.7-8 11-8 11z"/></svg></div>SUCCESS
+        </div>
+      
+  </div>
+</div>
+
+  </div>
+  <div class="idcard-actions">
+    <button type="button" class="btn-mini" id="downloadIdCardBtn">Download ID Card (Front &amp; Back)</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+  // "Keep Dancing / Keep Shining" is now plain HTML text (see .sc-keep) — no JS needed.
+  // (html2canvas does not render <text> inside inline <svg>, which is why it used to
+  // vanish from the downloaded PNG even though it showed fine on screen.)
+
+  // ==== BACKEND CONNECTION =====================================
+  var WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzLUghnI4QXXcElOVTa43Ify1MOPo9kWbYHKdmUvO0NRPzU4qK3AvTGy2gVOPoW3py8Uw/exec";
+
+  function callApi(action, payload) {
+    return fetch(WEB_APP_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" }, // avoids CORS preflight
+      body: JSON.stringify({ action: action, payload: payload || {} })
+    }).then(function (r) { return r.json(); });
+  }
+  // ==============================================================
+
+  // ==== STUDENT ID CARD ====
+  // ID card ke QR code par ye website khulti hai:
+  var ID_CARD_WEBSITE_URL = "https://spectrumdance.in/";
+  // Logo header wale image se hi liya jaata hai (alag upload nahi chahiye).
+  var STUDIO_LOGO_SRC = document.querySelector("header.brand img") ? document.querySelector("header.brand img").src : "";
+
+  var idCardSection = document.getElementById("idCardSection");
+  var qrDataUriCache = null;
+
+  function urlToDataUri(url){
+    return fetch(url).then(function(r){ return r.blob(); }).then(function(b){
+      return new Promise(function(res){
+        var fr = new FileReader();
+        fr.onload = function(){ res(fr.result); };
+        fr.readAsDataURL(b);
+      });
+    }).catch(function(){ return url; });
+  }
+  function setImg(img, src){
+    return new Promise(function(res){
+      img.onload = img.onerror = function(){ res(); };
+      img.src = src || "";
+      if(!src) res();
+    });
+  }
+  function shortAddress(a){
+    a = (a || "").replace(/\s+/g, " ").trim();
+    return a.length > 46 ? a.slice(0, 44).trim() + "…" : a;   // card mein cut na ho
+  }
+
+  function fillIdCard(payload, regNo){
+    document.getElementById("idcardName").textContent = (payload.studentName || "").toUpperCase();
+    document.getElementById("idcardRegNo").textContent = regNo || "";
+    document.getElementById("idcardMobile").textContent = payload.mobile || "";
+    document.getElementById("idcardDob").textContent = payload.dob || "";
+    document.getElementById("idcardAddress").textContent = shortAddress(payload.presentAddress || payload.currentAddress);
+    document.getElementById("idcardAdmissionDate").textContent = payload.admissionDate || "";
+    document.getElementById("idcardInterest").textContent = payload.interestedFor || "";
+
+    var qrPromise = qrDataUriCache ? Promise.resolve(qrDataUriCache)
+      : urlToDataUri("https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(ID_CARD_WEBSITE_URL))
+          .then(function(u){ qrDataUriCache = u; return u; });
+
+    var photoSrc = photoBase64 ? ("data:" + (photoMime || "image/jpeg") + ";base64," + photoBase64) : "";
+    return Promise.all([
+      setImg(document.getElementById("idcardPhotoImg"), photoSrc),
+      qrPromise.then(function(u){ return setImg(document.getElementById("idcardQr"), u); })
+    ]);
+  }
+
+  // Card ko PNG bana do (yahi PNG PDF mein jaayegi)
+  function captureCard(el){
+    return html2canvas(el, { backgroundColor: "#ffffff", scale: 2, useCORS: true, scrollX: 0, scrollY: 0 })
+      .then(function(c){ return c.toDataURL("image/png").split(",")[1]; });
+  }
+  function captureBothCards(){
+    return captureCard(document.getElementById("idcardFront"))
+      .then(function(front){
+        return captureCard(document.getElementById("idcardBack")).then(function(back){
+          return { front: front, back: back };
+        });
+      })
+      .catch(function(){ return { front: null, back: null }; }); // fail hua to bhi admission ho jaayega
+  }
+
+  function showIdCard(){ idCardSection.classList.remove("offscreen"); idCardSection.style.display = "block"; }
+  function hideIdCard(){ idCardSection.style.display = ""; idCardSection.classList.add("offscreen"); }
+
+  // Download ID card: Front & Back captured, merged into ONE image, and
+  // downloaded as a single file. (Browsers block/ask-permission for a second
+  // automatic download fired right after the first one — merging into a
+  // single PNG avoids that problem entirely and both sides always download.)
+  function downloadIdCard(){
+    if (typeof html2canvas === "undefined") return;
+    var btn = document.getElementById("downloadIdCardBtn");
+    btn.disabled = true;
+    var originalText = btn.textContent;
+    btn.textContent = "Preparing…";
+
+    function shotCanvas(el){
+      return html2canvas(el, {
+        backgroundColor: "#ffffff", scale: 3, useCORS: true,
+        scrollX: 0, scrollY: 0,
+        windowWidth: document.documentElement.scrollWidth,
+        windowHeight: document.documentElement.scrollHeight
+      });
+    }
+
+    var regNo = document.getElementById("idcardRegNo").textContent || "IDCard";
+
+    Promise.all([
+      shotCanvas(document.getElementById("idcardFront")),
+      shotCanvas(document.getElementById("idcardBack"))
+    ]).then(function(canvases){
+      var frontC = canvases[0], backC = canvases[1];
+      var gap = 40; // px gap between the two cards on the combined image
+      var combined = document.createElement("canvas");
+      combined.width = Math.max(frontC.width, backC.width);
+      combined.height = frontC.height + backC.height + gap;
+
+      var ctx = combined.getContext("2d");
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, combined.width, combined.height);
+      ctx.drawImage(frontC, (combined.width - frontC.width) / 2, 0);
+      ctx.drawImage(backC, (combined.width - backC.width) / 2, frontC.height + gap);
+
+      var link = document.createElement("a");
+      link.href = combined.toDataURL("image/png");
+      link.download = "IDCard_" + regNo + "_FrontAndBack.png";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    })
+    .catch(function(){ /* ignore */ })
+    .then(function(){ btn.disabled = false; btn.textContent = originalText; });
+  }
+  document.getElementById("downloadIdCardBtn").addEventListener("click", downloadIdCard);
+
+  // ---- Batch data: edit times / days-per-week per activity here ----
+  var DANCE_FITNESS_BATCHES = [
+    {t:"06:30 AM - 08:00 AM D-1", d:"6 days/week (Mon-Sat)"},
+    {t:"08:00 AM - 09:30 AM D-2", d:"6 days/week (Mon-Sat)"},
+    {t:"09:30 AM - 11:00 AM D-3", d:"6 days/week (Mon-Sat)"},
+    {t:"04:00 PM - 05:30 PM D-6", d:"6 days/week (Mon-Sat)"},
+    {t:"05:30 PM - 06:30 PM D-5", d:"6 days/week (Mon-Sat)"},
+    {t:"06:30 PM - 08:00 PM D-7", d:"6 days/week (Mon-Sat)"}
+  ];
+  var BATCHES = {
+    "Dance":    DANCE_FITNESS_BATCHES,
+    "Fitness":  DANCE_FITNESS_BATCHES,
+    // No fixed weekly schedule — timing is fixed directly with the teacher.
+    "Singing":  [],
+    "Guitar":   [],
+    "Acting":   [],
+    "Painting": [],
+    "Modeling": []
+  };
+
+  function pad(n){return n<10?"0"+n:n;}
+  function todayStr(){
+    var d=new Date();
+    return pad(d.getDate())+"/"+pad(d.getMonth()+1)+"/"+d.getFullYear();
+  }
+  document.getElementById("admissionDate").value = todayStr();
+
+  // Suggest a Registration No
+  var regNoInput = document.getElementById("regNo");
+  callApi("suggestRegNo").then(function(res){
+    if(res.status === "success" && !regNoInput.value) regNoInput.value = res.regNo;
+  }).catch(function(err){
+    console.error("suggestRegNo failed:", err);
+  });
+
+  // Interested For -> Batch Time
+  var interestedFor = document.getElementById("interestedFor");
+  var batchTime = document.getElementById("batchTime");
+  var batchDaysInfo = document.getElementById("batchDaysInfo");
+  var NO_FIXED_BATCH_MSG = "To be informed directly by our teacher";
+  interestedFor.addEventListener("change", function(){
+    var val = this.value;
+    var list = BATCHES[val] || [];
+    batchTime.innerHTML = "";
+    batchTime.disabled = false;
+    if(!val){
+      batchTime.innerHTML = "<option value=''>Select interest first</option>";
+      batchDaysInfo.textContent = "";
+      return;
+    }
+    if(list.length){
+      batchTime.innerHTML = "<option value=''>Select batch</option>" +
+        list.map(function(b){return "<option value='"+b.t+"' data-days='"+b.d+"'>"+b.t+"</option>";}).join("");
+      batchDaysInfo.textContent = "";
+    } else {
+      batchTime.innerHTML = "<option value='"+NO_FIXED_BATCH_MSG+"' selected>"+NO_FIXED_BATCH_MSG+"</option>";
+      batchTime.disabled = true;
+      batchDaysInfo.textContent = "No fixed batch for this activity — our teacher will contact you directly to schedule a convenient time.";
+    }
+  });
+  batchTime.addEventListener("change", function(){
+    var opt = this.options[this.selectedIndex];
+    batchDaysInfo.textContent = opt && opt.dataset.days ? opt.dataset.days : "";
+  });
+
+  // Date of Birth — calendar-only
+  var dobInput = document.getElementById("dob");
+  var dobPicker = document.getElementById("dobPicker");
+  var dobCalBtn = document.getElementById("dobCalBtn");
+  (function(){
+    var t = new Date();
+    dobPicker.max = t.getFullYear() + "-" + pad(t.getMonth()+1) + "-" + pad(t.getDate());
+  })();
+  function openDobPicker(){
+    if(dobPicker.showPicker){ dobPicker.showPicker(); }
+    else { dobPicker.focus(); dobPicker.click(); }
+  }
+  dobCalBtn.addEventListener("click", openDobPicker);
+  dobInput.addEventListener("click", openDobPicker);
+  dobInput.addEventListener("focus", openDobPicker);
+  // The invisible overlay sits on top of the field, so handle its click too.
+  dobPicker.addEventListener("click", openDobPicker);
+  dobPicker.addEventListener("focus", openDobPicker);
+  dobInput.addEventListener("keydown", function(e){ e.preventDefault(); });
+  dobInput.addEventListener("paste", function(e){ e.preventDefault(); });
+  dobPicker.addEventListener("change", function(){
+    if(!this.value) return;
+    var parts = this.value.split("-"); // yyyy-mm-dd
+    dobInput.value = parts[2] + "/" + parts[1] + "/" + parts[0];
+    dobInput.dispatchEvent(new Event("input"));
+  });
+
+  // Digits-only fields
+  function restrictToDigits(id, maxLen){
+    var el = document.getElementById(id);
+    el.addEventListener("input", function(){
+      var digitsOnly = this.value.replace(/\D/g, "").slice(0, maxLen);
+      if(this.value !== digitsOnly) this.value = digitsOnly;
+    });
+    el.addEventListener("paste", function(e){
+      e.preventDefault();
+      var text = (e.clipboardData || window.clipboardData).getData("text");
+      var digitsOnly = (this.value + text).replace(/\D/g, "").slice(0, maxLen);
+      this.value = digitsOnly;
+      this.dispatchEvent(new Event("input"));
+    });
+  }
+  restrictToDigits("mobile", 10);
+  restrictToDigits("altMobile", 10);
+  restrictToDigits("guardianMobile", 10);
+  restrictToDigits("aadhar", 12);
+
+  // Expiry date calculation
+  function parseDMY(str){
+    var p = str.split("/");
+    return new Date(parseInt(p[2],10), parseInt(p[1],10)-1, parseInt(p[0],10));
+  }
+  function computeExpiry(){
+    var dur = parseInt(document.getElementById("duration").value,10);
+    var type = document.getElementById("durationType").value;
+    if(!dur || !type) { document.getElementById("expiryDate").value=""; return; }
+    var base = parseDMY(document.getElementById("admissionDate").value);
+    if(type==="Day") base.setDate(base.getDate()+dur);
+    else if(type==="Month") base.setMonth(base.getMonth()+dur);
+    else if(type==="Year") base.setFullYear(base.getFullYear()+dur);
+    document.getElementById("expiryDate").value = pad(base.getDate())+"/"+pad(base.getMonth()+1)+"/"+base.getFullYear();
+  }
+  document.getElementById("duration").addEventListener("input", computeExpiry);
+  document.getElementById("durationType").addEventListener("change", computeExpiry);
+
+  // Photo capture / gallery
+  var photoBase64 = null, photoMime = null;
+  var PHOTO_MAX_DIM = 1000;       // max width/height in px after resize
+  var PHOTO_JPEG_QUALITY = 0.72;  // compression quality
+  function handleFile(file){
+    if(!file) return;
+    var img = document.getElementById("photoPreview");
+    var reader = new FileReader();
+    reader.onload = function(e){
+      var image = new Image();
+      image.onload = function(){
+        var w = image.naturalWidth || image.width;
+        var h = image.naturalHeight || image.height;
+        if(w > PHOTO_MAX_DIM || h > PHOTO_MAX_DIM){
+          if(w >= h){ h = Math.round(h * (PHOTO_MAX_DIM / w)); w = PHOTO_MAX_DIM; }
+          else { w = Math.round(w * (PHOTO_MAX_DIM / h)); h = PHOTO_MAX_DIM; }
+        }
+        var canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext("2d").drawImage(image, 0, 0, w, h);
+        var dataUrl;
+        try{
+          dataUrl = canvas.toDataURL("image/jpeg", PHOTO_JPEG_QUALITY);
+        }catch(err){
+          photoMime = file.type;
+          photoBase64 = e.target.result.split(",")[1];
+          img.src = e.target.result;
+          img.style.display = "inline-block";
+          return;
+        }
+        photoMime = "image/jpeg";
+        photoBase64 = dataUrl.split(",")[1];
+        img.src = dataUrl;
+        img.style.display = "inline-block";
+      };
+      image.onerror = function(){
+        photoMime = file.type;
+        photoBase64 = e.target.result.split(",")[1];
+        img.src = e.target.result;
+        img.style.display = "inline-block";
+      };
+      image.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+  document.getElementById("btnCamera").addEventListener("click", function(){document.getElementById("fileCamera").click();});
+  document.getElementById("btnGallery").addEventListener("click", function(){document.getElementById("fileGallery").click();});
+  document.getElementById("fileCamera").addEventListener("change", function(e){handleFile(e.target.files[0]);});
+  document.getElementById("fileGallery").addEventListener("change", function(e){handleFile(e.target.files[0]);});
+
+  // Validation helpers
+  function markInvalid(fieldId, invalid){
+    var field = document.getElementById(fieldId);
+    var wrapper = field.closest(".field") || field.parentElement;
+    if(invalid) wrapper.classList.add("invalid"); else wrapper.classList.remove("invalid");
+  }
+
+  var DOB_RE = /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/\d{4}$/;
+  var MOB_RE = /^\d{10}$/;
+  var AADHAR_RE = /^\d{12}$/;
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  function validateForm(){
+    var ok = true;
+    function req(id){
+      var v = document.getElementById(id).value.trim();
+      var bad = !v;
+      markInvalid(id, bad);
+      if(bad) ok = false;
+      return v;
+    }
+    req("studentName");
+    var dob = req("dob"); if(dob && !DOB_RE.test(dob)){markInvalid("dob",true); ok=false;}
+    var mob = req("mobile"); if(mob && !MOB_RE.test(mob)){markInvalid("mobile",true); ok=false;}
+    var altMob = document.getElementById("altMobile").value.trim();
+    if(altMob && !MOB_RE.test(altMob)){markInvalid("altMobile",true); ok=false;} else markInvalid("altMobile",false);
+    req("studentOccupation");
+    var email = req("email"); if(email && !EMAIL_RE.test(email)){markInvalid("email",true); ok=false;}
+    req("guardianName");
+    req("guardianRelation");
+    req("guardianOccupation");
+    var gmob = req("guardianMobile"); if(gmob && !MOB_RE.test(gmob)){markInvalid("guardianMobile",true); ok=false;}
+    req("presentAddress");
+    var aadhar = req("aadhar");
+    if(aadhar && !AADHAR_RE.test(aadhar)){markInvalid("aadhar",true); ok=false;}
+    req("interestedFor");
+    req("batchTime");
+    req("duration");
+    req("durationType");
+    req("paymentSettlement");
+
+    var photoField = document.getElementById("photoField");
+    if(!photoBase64){
+      photoField.classList.add("invalid");
+      ok = false;
+    } else {
+      photoField.classList.remove("invalid");
+    }
+
+    var agreed = document.getElementById("agreeTerms").checked;
+    markInvalid("agreeTerms", !agreed);
+    if(!agreed) ok = false;
+
+    return ok;
+  }
+
+  // Convert a base64 PDF into a browser download
+  function downloadBase64Pdf(base64, filename){
+    try{
+      var byteChars = atob(base64);
+      var byteNumbers = new Array(byteChars.length);
+      for (var i = 0; i < byteChars.length; i++) byteNumbers[i] = byteChars.charCodeAt(i);
+      var byteArray = new Uint8Array(byteNumbers);
+      var blob = new Blob([byteArray], {type: "application/pdf"});
+      var link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = filename || "Admission.pdf";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }catch(e){ /* the PDF has still been emailed */ }
+  }
+
+  // ---- Academy Rules popup ----
+  var rulesOverlay  = document.getElementById("rulesOverlay");
+  var rulesBody     = document.getElementById("rulesBody");
+  var rulesAgreeRow = document.getElementById("rulesAgreeRow");
+  var rulesAgreeBox = document.getElementById("rulesAgreeBox");
+  var scrollNote    = document.getElementById("scrollNote");
+  var agreeTermsBox = document.getElementById("agreeTerms");
+  var agreeStatus   = document.getElementById("agreeStatus");
+
+  function refreshAgreeStatus(){
+    if(agreeTermsBox.checked){
+      agreeStatus.textContent = "✓ Accepted — I agree to read the above Terms & Conditions.";
+      agreeStatus.classList.add("done");
+    } else {
+      agreeStatus.textContent = "Not accepted yet — please open the rules above.";
+      agreeStatus.classList.remove("done");
+    }
+  }
+
+  function checkRulesScrolled(){
+    var reachedEnd = rulesBody.scrollTop + rulesBody.clientHeight >= rulesBody.scrollHeight - 20;
+    if(reachedEnd){
+      rulesAgreeRow.classList.add("show");
+      scrollNote.style.display = "none";
+    }
+  }
+  rulesBody.addEventListener("scroll", checkRulesScrolled);
+
+  function openRules(){
+    rulesOverlay.classList.add("show");
+    document.body.style.overflow = "hidden";
+    rulesAgreeBox.checked = agreeTermsBox.checked;
+    rulesAgreeRow.classList.remove("show");
+    scrollNote.style.display = "";
+    rulesBody.scrollTop = 0;
+    setTimeout(checkRulesScrolled, 60);
+  }
+  function closeRules(){
+    rulesOverlay.classList.remove("show");
+    document.body.style.overflow = "";
+  }
+
+  document.getElementById("openRulesBtn").addEventListener("click", openRules);
+  document.getElementById("rulesCloseBtn").addEventListener("click", closeRules);
+  rulesOverlay.addEventListener("click", function(e){ if(e.target === rulesOverlay) closeRules(); });
+  document.addEventListener("keydown", function(e){
+    if(e.key === "Escape" && rulesOverlay.classList.contains("show")) closeRules();
+  });
+
+  rulesAgreeBox.addEventListener("change", function(){
+    agreeTermsBox.checked = rulesAgreeBox.checked;
+    markInvalid("agreeTerms", !rulesAgreeBox.checked);
+    refreshAgreeStatus();
+    if(rulesAgreeBox.checked) setTimeout(closeRules, 350);
+  });
+
+  function resetAgreement(){
+    agreeTermsBox.checked = false;
+    rulesAgreeBox.checked = false;
+    rulesAgreeRow.classList.remove("show");
+    scrollNote.style.display = "";
+    refreshAgreeStatus();
+  }
+  refreshAgreeStatus();
+
+  // ---- Result popup ----
+  var resultOverlay = document.getElementById("resultOverlay");
+  var resultCard = document.getElementById("resultCard");
+  var resultContent = document.getElementById("resultContent");
+  var resultOkBtn = document.getElementById("resultOkBtn");
+  var popupOnClose = null;
+
+  function showResultPopup(type, html, onClose){
+    resultCard.className = "result-card " + type;
+    resultContent.innerHTML = html;
+    resultOverlay.classList.add("show");
+    popupOnClose = onClose || null;
+  }
+  function hideResultPopup(){
+    resultOverlay.classList.remove("show");
+    var cb = popupOnClose;
+    popupOnClose = null;
+    if(cb) cb();
+  }
+  resultOkBtn.addEventListener("click", hideResultPopup);
+  resultOverlay.addEventListener("click", function(e){
+    if(e.target === resultOverlay) hideResultPopup();
+  });
+
+  // ---- Clears every field so the next student can fill a fresh form ----
+  function resetAdmissionFormForNextStudent(){
+    var form = document.getElementById("admissionForm");
+    form.reset();
+    form.querySelectorAll("input,select,textarea,button").forEach(function(el){ el.disabled = false; });
+
+    document.getElementById("admissionDate").value = todayStr();
+    document.getElementById("dob").value = "";
+    var dobPicker = document.getElementById("dobPicker");
+    if(dobPicker) dobPicker.value = "";
+    document.getElementById("expiryDate").value = "";
+
+    batchTime.innerHTML = "<option value=''>Select interest first</option>";
+    batchTime.disabled = false;
+    batchDaysInfo.textContent = "";
+
+    var img = document.getElementById("photoPreview");
+    img.src = "";
+    img.style.display = "none";
+    photoBase64 = null;
+    photoMime = null;
+
+    resetAgreement();
+
+    document.querySelectorAll(".invalid").forEach(function(el){ el.classList.remove("invalid"); });
+
+    var btn = document.getElementById("submitBtn");
+    btn.disabled = false;
+    btn.textContent = "Submit Admission Form";
+
+    var regNoInput = document.getElementById("regNo");
+    regNoInput.value = "Generating...";
+    callApi("suggestRegNo").then(function(res){
+      if(res.status === "success") regNoInput.value = res.regNo;
+    }).catch(function(){});
+
+    window.scrollTo({top:0, behavior:"smooth"});
+  }
+
+  document.getElementById("admissionForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    if(!validateForm()){
+      var firstInvalid = document.querySelector(".invalid");
+      if(firstInvalid) firstInvalid.scrollIntoView({behavior:"smooth", block:"center"});
+      return;
+    }
+    var btn = document.getElementById("submitBtn");
+    btn.disabled = true;
+    btn.textContent = "Submitting...";
+    var responded = false;
+
+    // Purana ID card screen se hata do (naya banne ke liye card offscreen chahiye)
+    hideIdCard();
+
+    var slowNoticeTimer = setTimeout(function(){
+      if(!responded) btn.textContent = "Still submitting… this can take up to a minute, especially with a photo attached. Please wait.";
+    }, 12000);
+    var giveUpTimer = setTimeout(function(){
+      if(!responded){
+        showResultPopup("error", "<h3>This is taking much longer than expected</h3>Your admission may still be processing on our server — please wait a little longer before trying again. If nothing happens, check your email for a confirmation before resubmitting, or contact the academy directly.");
+        btn.disabled = false;
+        btn.textContent = "Submit Admission Form";
+      }
+    }, 60000);
+
+    var payload = {
+      regNo: document.getElementById("regNo").value.trim(),
+      admissionDate: document.getElementById("admissionDate").value,
+      studentName: document.getElementById("studentName").value.trim(),
+      dob: document.getElementById("dob").value.trim(),
+      mobile: document.getElementById("mobile").value.trim(),
+      altMobile: document.getElementById("altMobile").value.trim(),
+      studentOccupation: document.getElementById("studentOccupation").value.trim(),
+      email: document.getElementById("email").value.trim(),
+      guardianName: document.getElementById("guardianName").value.trim(),
+      guardianRelation: document.getElementById("guardianRelation").value,
+      guardianOccupation: document.getElementById("guardianOccupation").value.trim(),
+      guardianMobile: document.getElementById("guardianMobile").value.trim(),
+      presentAddress: document.getElementById("presentAddress").value.trim(),
+      currentAddress: document.getElementById("currentAddress").value.trim(),
+      aadhar: document.getElementById("aadhar").value.trim(),
+      interestedFor: document.getElementById("interestedFor").value,
+      batchTime: document.getElementById("batchTime").value,
+      batchDays: batchDaysInfo.textContent,
+      duration: document.getElementById("duration").value,
+      durationType: document.getElementById("durationType").value,
+      expiryDate: document.getElementById("expiryDate").value,
+      paymentSettlement: document.getElementById("paymentSettlement").value,
+      term1: "Agree",
+      term2: "Agree",
+      term3: "Yes",
+      photoBase64: photoBase64,
+      photoMime: photoMime
+    };
+
+    // Card banao -> PNG -> server ko bhejo. Agar kisi aur student ko same
+    // number mil gaya tha to server naya number batata hai; card naye number
+    // se dobara banake bhej dete hain (max 3 baar).
+    function buildAndSend(attempt){
+      return fillIdCard(payload, payload.regNo)
+        .then(captureBothCards)
+        .then(function(imgs){
+          payload.idCardFrontPng = imgs.front;
+          payload.idCardBackPng = imgs.back;
+          return callApi("submitForm", payload);
+        })
+        .then(function(res){
+          if(res.status === "regno_changed" && attempt < 3){
+            document.getElementById("regNo").value = res.regNo;
+            payload.regNo = res.regNo;
+            return buildAndSend(attempt + 1);
+          }
+          return res;
+        });
+    }
+
+    buildAndSend(0)
+      .then(function(res){
+        responded = true;
+        clearTimeout(slowNoticeTimer);
+        clearTimeout(giveUpTimer);
+
+        if(res.status === "success"){
+          if(res.pdfBase64) downloadBase64Pdf(res.pdfBase64, res.pdfName);
+          showIdCard();
+          showResultPopup("ok",
+            "<h3>Admission Successful!</h3>Registration No.: <strong>"+res.regNo+"</strong><br>Your admission PDF is downloading now and has also been emailed to you. Your Student ID Card is shown below — you can download it too.",
+            function(){
+              resetAdmissionFormForNextStudent();
+              idCardSection.scrollIntoView({behavior:"smooth", block:"start"});
+            }
+          );
+        } else if(res.status === "duplicate"){
+          showResultPopup("dup",
+            "<h3>Already Saved</h3>This admission (Registration No.: <strong>"+res.regNo+"</strong>) is already saved. Please check your email, or contact the academy if this seems wrong.",
+            resetAdmissionFormForNextStudent
+          );
+        } else {
+          showResultPopup("error", "<h3>Submission failed</h3>"+(res.message || "Unknown error"));
+          btn.disabled = false;
+          btn.textContent = "Submit Admission Form";
+        }
+      })
+      .catch(function(err){
+        responded = true;
+        clearTimeout(slowNoticeTimer);
+        clearTimeout(giveUpTimer);
+        showResultPopup("error", "<h3>Submission failed</h3>"+err.message);
+        btn.disabled = false;
+        btn.textContent = "Submit Admission Form";
+      });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Spectrum Dance Academy — Payment Receipt (Admin)</title>
+  <style>
+    :root{
+      --purple:#4a1a7a;
+      --purple-deep:#33115a;
+      --orange:#e85d25;
+      --gold:#f2b705;
+      --cream:#faf6ef;
+      --ink:#2a2130;
+      --line:#e4dcee;
+      --ok:#1e8f5f;
+      --err:#c0392b;
+      --info:#8a5a00;
+      --radius:10px;
+    }
+    *{box-sizing:border-box;}
+    body{
+      margin:0;
+      font-family:'Segoe UI',Tahoma,Verdana,sans-serif;
+      background:linear-gradient(180deg,var(--cream) 0%,#f2ecf9 100%);
+      color:var(--ink);
+      padding:0 0 40px;
+    }
+    .wrap{max-width:760px;margin:0 auto;padding:0 24px;}
+    header.brand{
+      position:relative;
+      background:#0d0d0d;
+      color:#fff;
+      padding:0;
+      border-radius:0 0 6px 6px;
+      overflow:hidden;
+      box-shadow:0 6px 18px rgba(0,0,0,.35);
+    }
+    header.brand img.brand-banner{
+      display:block;width:100%;max-width:100%;height:auto;
+      border-radius:0 0 4px 4px;
+    }
+    .admin-bar{
+      background:var(--purple-deep);
+      color:#fff;
+      text-align:center;
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:8px;
+      margin:12px 0 20px;
+      font-weight:600;
+      letter-spacing:.4px;
+      text-transform:uppercase;
+    }
+    .share-link-box{
+      display:flex;align-items:center;gap:8px;
+      background:#fff;border:1.5px solid var(--line);border-radius:8px;
+      padding:8px 10px;margin:-12px 0 20px;font-size:12px;
+    }
+    .share-link-box .lbl{font-weight:700;color:var(--purple-deep);white-space:nowrap;}
+    .share-link-box input{
+      flex:1;border:1px solid var(--line);border-radius:6px;padding:6px 8px;
+      font-size:11.5px;color:#655a78;background:#f9f7fc;
+    }
+    .share-link-box button{
+      white-space:nowrap;border:1.5px solid var(--purple);background:#fff;color:var(--purple);
+      border-radius:6px;padding:6px 10px;font-size:11.5px;font-weight:700;cursor:pointer;
+    }
+    .share-link-box button:hover{background:var(--purple);color:#fff;}
+    h2.section-title{
+      font-size:14px;
+      text-transform:uppercase;
+      letter-spacing:1.2px;
+      color:var(--purple);
+      margin:22px 0 12px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    h2.section-title::after{content:"";flex:1;height:1px;background:var(--line);}
+    .card{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:16px;
+    }
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+    @media(max-width:560px){.grid{grid-template-columns:1fr;}}
+    .field{margin-bottom:14px;}
+    .field label{
+      display:block;font-size:12.5px;font-weight:600;color:var(--purple-deep);
+      margin-bottom:5px;letter-spacing:.2px;
+    }
+    .field label .req{color:var(--orange);}
+    .field input[type=text],
+    .field input[type=tel],
+    .field input[type=email],
+    .field input[type=number]{
+      width:100%;
+      padding:9px 10px;
+      border:1.5px solid var(--line);
+      border-radius:8px;
+      font-size:14px;
+      background:#fff;
+      color:var(--ink);
+      font-family:inherit;
+    }
+    .field input:focus{
+      outline:2px solid var(--gold);outline-offset:1px;border-color:var(--purple);
+    }
+    .field input[readonly]{background:#f4f1fa;color:#655a78;}
+    .field input.locked{background:#fdecea;color:var(--err);font-weight:700;}
+    .hint{font-size:11px;color:#8a7fa0;margin-top:4px;}
+    .lookup-row{display:flex;gap:8px;align-items:flex-end;}
+    .lookup-row .field{flex:1;margin-bottom:0;}
+    .btn-mini{
+      background:#fff;border:1.5px solid var(--purple);color:var(--purple);
+      padding:9px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;height:38px;
+    }
+    .btn-mini:hover{background:var(--purple);color:#fff;}
+    .btn-mini:disabled{opacity:.5;cursor:not-allowed;}
+    .submit-btn{
+      width:100%;padding:14px;margin-top:24px;
+      background:linear-gradient(120deg,var(--orange),var(--gold));
+      color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:700;
+      letter-spacing:.5px;cursor:pointer;box-shadow:0 6px 16px rgba(232,93,37,.35);
+    }
+    .submit-btn:disabled{opacity:.6;cursor:not-allowed;}
+    #resultBox{margin-top:18px;padding:16px;border-radius:10px;display:none;text-align:center;}
+    #resultBox.ok{background:#e7f7ef;border:1.5px solid var(--ok);color:var(--ok);}
+    #resultBox.error{background:#fdecea;border:1.5px solid var(--err);color:var(--err);}
+    #resultBox h3{margin:0 0 4px;}
+    #resultBox a.wa-link{display:inline-block;margin-top:10px;background:#25D366;color:#fff;padding:8px 16px;border-radius:8px;text-decoration:none;font-weight:600;}
+    #studentInfo{display:none;}
+    #duesRow{font-size:16px;font-weight:700;color:var(--err);}
+
+    .charge-card{
+      background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+      padding:14px;margin-top:14px;
+    }
+    .charge-row{
+      display:grid;
+      grid-template-columns:1.6fr 1fr 1fr 1fr auto;
+      gap:8px;align-items:end;margin-bottom:10px;
+    }
+    @media(max-width:560px){
+      .charge-row{grid-template-columns:1fr 1fr;}
+      .charge-row .charge-dues-wrap{grid-column:1 / span 2;}
+    }
+    .charge-row label{
+      display:block;font-size:11px;font-weight:600;color:var(--purple-deep);margin-bottom:4px;
+    }
+    .charge-row input[type=text],
+    .charge-row input[type=number]{
+      width:100%;padding:8px 9px;border:1.5px solid var(--line);border-radius:7px;
+      font-size:13px;font-family:inherit;color:var(--ink);background:#fff;
+    }
+    .charge-row input[readonly]{background:#f4f1fa;color:#655a78;}
+    .charge-row .btn-remove{
+      background:#fff;border:1.5px solid var(--err);color:var(--err);
+      border-radius:7px;padding:8px 10px;font-size:12px;font-weight:700;cursor:pointer;
+      white-space:nowrap;height:36px;
+    }
+    .charge-row .btn-remove:hover{background:var(--err);color:#fff;}
+    .charge-presets{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
+    .chip-btn{
+      background:#f4f1fa;border:1.5px dashed var(--purple);color:var(--purple-deep);
+      padding:6px 12px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;
+    }
+    .chip-btn:hover{background:var(--purple);color:#fff;border-style:solid;}
+    .btn-add-charge{
+      background:#fff;border:1.5px solid var(--ok);color:var(--ok);
+      padding:8px 14px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;
+    }
+    .btn-add-charge:hover{background:var(--ok);color:#fff;}
+    .charge-totals{
+      margin-top:10px;padding:10px 12px;background:#f4f1fa;border-radius:8px;
+      font-size:12.5px;font-weight:700;color:var(--purple-deep);
+      display:flex;flex-wrap:wrap;gap:14px;
+    }
+    .charge-totals span.d{color:var(--err);}
+    #noChargesHint{font-size:12px;color:#8a7fa0;margin-bottom:10px;}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header class="brand">
+    <div class="brand-row" style="display:block;">
+      <!-- Index header: banner.png -> 1522 x 488 px (3.12:1). White area cropped. -->
+      <img class="brand-banner" src="banner.png" alt="Spectrum Dance Academy">
+    </div>
+    </div>
+  </header>
+
+  <div class="admin-bar">Admin Only — Payment Receipt</div>
+
+  <!-- Hidden by request: admin key auto-connects in the background, and the
+       admission-form link is no longer shown on this admin-only page. -->
+  <div style="display:none;">
+    <div class="share-link-box" id="adminKeyBox">
+      <span class="lbl">Admin Key:</span>
+      <input type="password" id="adminKeyInput" placeholder="Enter the ADMIN_KEY from Script Properties">
+      <button type="button" id="btnUnlock">Unlock</button>
+    </div>
+
+    <div class="share-link-box">
+      <span class="lbl">Admission form link:</span>
+      <input type="text" id="admissionFormLink" readonly>
+      <button type="button" id="btnCopyFormLink">Copy Link</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="lookup-row">
+      <div class="field">
+        <label>Registration No.</label>
+        <input type="text" id="lookupRegNo" placeholder="e.g. 26001">
+      </div>
+      <button type="button" class="btn-mini" id="btnLoad">Load Student</button>
+    </div>
+    <div class="hint" id="lookupHint"></div>
+  </div>
+
+  <form id="paymentForm" novalidate>
+    <div id="studentInfo">
+      <h2 class="section-title">Student</h2>
+      <div class="card grid">
+        <div class="field"><label>Student Name</label><input type="text" id="studentName" readonly></div>
+        <div class="field"><label>Mobile No.</label><input type="text" id="mobile" readonly></div>
+        <div class="field"><label>Duration</label><input type="text" id="duration" readonly></div>
+        <div class="field"><label>Duration Type</label><input type="text" id="durationType" readonly></div>
+        <div class="field"><label>Expiry Date</label><input type="text" id="expiryDate" readonly></div>
+        <div class="field"><label>Payment Settlement</label><input type="text" id="paymentSettlement" readonly></div>
+      </div>
+
+      <h2 class="section-title">Payment</h2>
+      <div class="card grid">
+        <div class="field">
+          <label>Total Amount (₹) <span class="req">*</span></label>
+          <input type="number" id="totalAmount" min="0" step="0.01" inputmode="decimal" required>
+        </div>
+        <div class="field">
+          <label>Paid Amount (₹) <span class="req">*</span></label>
+          <input type="number" id="paidAmount" min="0" step="0.01" inputmode="decimal" required>
+        </div>
+        <div class="field">
+          <label>Discount Amount (₹)</label>
+          <input type="number" id="discountAmount" min="0" step="0.01" inputmode="decimal">
+          <div id="discountPercentText" style="font-size:12.5px;color:var(--green,#1a8f4c);font-weight:700;margin-top:4px;"></div>
+        </div>
+        <div class="field" id="duesRow">
+          <label>Dues (₹) — auto-calculated</label>
+          <input type="text" id="dues" readonly class="locked" value="0.00">
+        </div>
+        <div class="field" id="duesDateRow" style="display:none;">
+          <label>Pay Dues By (deadline)</label>
+          <input type="date" id="duesDate">
+          <div class="hint">Sent to the student in the email, WhatsApp message &amp; receipt PDF.</div>
+        </div>
+      </div>
+
+      <h2 class="section-title">Additional Charges</h2>
+      <div class="charge-card">
+        <div class="charge-presets" id="chargePresets">
+          <button type="button" class="chip-btn" data-charge-name="AC Charge">+ AC Charge</button>
+          <button type="button" class="chip-btn" data-charge-name="Dress Charge">+ Dress Charge</button>
+          <button type="button" class="chip-btn" data-charge-name="ID Card Charge">+ ID Card Charge</button>
+        </div>
+        <div id="chargeRowsContainer"></div>
+        <p id="noChargesHint">No additional charges added yet. Tap a quick-add button above, or "+ Add Charge" below.</p>
+        <button type="button" class="btn-add-charge" id="btnAddCharge">+ Add Charge</button>
+        <div class="charge-totals" id="chargeTotalsBox" style="display:none;">
+          <span>Total Charge: ₹<span id="chargeGrandTotal">0.00</span></span>
+          <span>Total Paid: ₹<span id="chargeGrandPaid">0.00</span></span>
+          <span>Total Dues: <span class="d">₹<span id="chargeGrandDues">0.00</span></span></span>
+        </div>
+      </div>
+
+      <div class="hint" style="margin-top:12px;padding:10px 12px;background:#fdecea;border:1px solid var(--err);border-radius:8px;color:var(--err);font-weight:600;">
+        Terms &amp; Conditions: Your money will not be refundable, as per the academy's admission terms and conditions. This note is included in the student's payment receipt email.
+      </div>
+
+      <button type="submit" class="submit-btn" id="submitBtn">Submit Payment &amp; Send Receipt</button>
+    </div>
+    <div id="resultBox"></div>
+  </form>
+</div>
+
+<script>
+  // ==== BACKEND CONNECTION =====================================
+  // Paste the SAME Apps Script Web App URL used in Index.html
+  var WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzLUghnI4QXXcElOVTa43Ify1MOPo9kWbYHKdmUvO0NRPzU4qK3AvTGy2gVOPoW3py8Uw/exec";
+
+  function callApi(action, payload) {
+    return fetch(WEB_APP_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" }, // avoids CORS preflight
+      body: JSON.stringify({ action: action, payload: payload || {} })
+    }).then(function (r) { return r.json(); });
+  }
+
+  // This page is opened as: payment.html?regNo=26001&key=sda2026
+  // regNo changes per student automatically — it comes from the link in each
+  // "New Admission" email, so opening that link always loads the right student.
+  // FALLBACK_ADMIN_KEY is used only if the link is ever opened without ?key=
+  // (e.g. someone bookmarked the bare URL), so the admin never has to type
+  // anything manually.
+  var FALLBACK_ADMIN_KEY = "sda2026";
+  var urlParams = new URLSearchParams(window.location.search);
+  var ADMIN_KEY = urlParams.get("key") || FALLBACK_ADMIN_KEY;
+  var studentEmail = "";
+
+  // ==== Set this to your Netlify Index.html (admission form) URL ====
+  var ADMISSION_FORM_URL = "https://sdaadmissionfrom.netlify.app/";
+  (function(){
+    var linkInput = document.getElementById("admissionFormLink");
+    linkInput.value = ADMISSION_FORM_URL;
+    document.getElementById("btnCopyFormLink").addEventListener("click", function(){
+      linkInput.select();
+      linkInput.setSelectionRange(0, 99999);
+      try{
+        navigator.clipboard.writeText(ADMISSION_FORM_URL).then(function(){
+          var btn = document.getElementById("btnCopyFormLink");
+          var original = btn.textContent;
+          btn.textContent = "Copied!";
+          setTimeout(function(){ btn.textContent = original; }, 1500);
+        });
+      } catch(e){
+        document.execCommand("copy");
+      }
+    });
+  })();
+
+  var lookupRegNo = document.getElementById("lookupRegNo");
+  var studentInfo = document.getElementById("studentInfo");
+  var lookupHint = document.getElementById("lookupHint");
+
+  // Auto-fill Registration No from the URL (?regNo=26001), if present
+  lookupRegNo.value = urlParams.get("regNo") || "";
+
+  function loadStudent(){
+    var regNo = lookupRegNo.value.trim();
+    if(!regNo){ lookupHint.textContent = "Enter a Registration No first."; return; }
+    if(!ADMIN_KEY){ lookupHint.textContent = "Missing admin key in the link (?key=...)."; return; }
+    lookupHint.textContent = "Loading...";
+    callApi("getStudentForPayment", { regNo: regNo, adminKey: ADMIN_KEY })
+      .then(function(res){
+        if(res.status === "success"){
+          document.getElementById("studentName").value = res.studentName || "";
+          document.getElementById("mobile").value = res.mobile || "";
+          document.getElementById("duration").value = res.duration || "";
+          document.getElementById("durationType").value = res.durationType || "";
+          document.getElementById("expiryDate").value = res.expiryDate || "";
+          document.getElementById("paymentSettlement").value = res.paymentSettlement || "";
+          studentEmail = res.email || "";
+          studentInfo.style.display = "block";
+          lookupHint.textContent = "Loaded: " + res.studentName;
+        } else {
+          studentInfo.style.display = "none";
+          lookupHint.textContent = res.message || "Not found.";
+        }
+      })
+      .catch(function(err){
+        lookupHint.textContent = "Error: " + err.message;
+      });
+  }
+  document.getElementById("btnLoad").addEventListener("click", loadStudent);
+  if(lookupRegNo.value.trim()) loadStudent();
+
+  var totalInput = document.getElementById("totalAmount");
+  var paidInput = document.getElementById("paidAmount");
+  var duesInput = document.getElementById("dues");
+  var discountInput = document.getElementById("discountAmount");
+  var discountPercentText = document.getElementById("discountPercentText");
+  var duesDateRow = document.getElementById("duesDateRow");
+  var duesDateInput = document.getElementById("duesDate");
+  function recomputeDues(){
+    var t = parseFloat(totalInput.value) || 0;
+    var p = parseFloat(paidInput.value) || 0;
+    var d = parseFloat(discountInput.value) || 0;
+    var dues = t - p - d;
+    duesInput.value = dues.toFixed(2);
+    // Only ask for a dues deadline when something is actually still owed.
+    if(dues > 0){
+      duesDateRow.style.display = "block";
+    } else {
+      duesDateRow.style.display = "none";
+      duesDateInput.value = "";
+    }
+  }
+  function recomputeDiscountPercent(){
+    var t = parseFloat(totalInput.value) || 0;
+    var d = parseFloat(discountInput.value) || 0;
+    if(t > 0 && d > 0){
+      var pct = (d / t) * 100;
+      discountPercentText.textContent = "Discount " + (Math.round(pct * 10) / 10) + "%";
+    } else {
+      discountPercentText.textContent = "";
+    }
+  }
+  totalInput.addEventListener("input", recomputeDues);
+  paidInput.addEventListener("input", recomputeDues);
+  discountInput.addEventListener("input", recomputeDues);
+  totalInput.addEventListener("input", recomputeDiscountPercent);
+  discountInput.addEventListener("input", recomputeDiscountPercent);
+
+  // ==== ADDITIONAL CHARGES (AC charge, dress charge, ID card charge, etc.) ====
+  // Admin can quick-add a preset charge (chips below) or add a blank row with
+  // "+ Add Charge". Each row has its own Charge amount, Paid amount and an
+  // auto-calculated Dues amount. Every row that has a name and/or amount gets
+  // sent to the backend and appears in the payment receipt email, PDF and
+  // WhatsApp message alongside the main course fee.
+  var chargeRowsContainer = document.getElementById("chargeRowsContainer");
+  var noChargesHint = document.getElementById("noChargesHint");
+  var chargeTotalsBox = document.getElementById("chargeTotalsBox");
+  var chargeGrandTotal = document.getElementById("chargeGrandTotal");
+  var chargeGrandPaid = document.getElementById("chargeGrandPaid");
+  var chargeGrandDues = document.getElementById("chargeGrandDues");
+  var chargeRowSeq = 0;
+
+  function recomputeChargeTotals(){
+    var rows = chargeRowsContainer.querySelectorAll(".charge-row");
+    var chargesAmt = 0, chargesPaid = 0, chargesDues = 0;
+    rows.forEach(function(row){
+      var a = parseFloat(row.querySelector(".camount").value) || 0;
+      var p = parseFloat(row.querySelector(".cpaid").value) || 0;
+      chargesAmt += a; chargesPaid += p; chargesDues += (a - p);
+    });
+
+    // Combine with the main Payment section so this box always shows the
+    // grand total (course fee + additional charges), not just the charges.
+    var mainTotal = parseFloat(totalInput.value) || 0;
+    var mainPaid = parseFloat(paidInput.value) || 0;
+    var mainDiscount = parseFloat(discountInput.value) || 0;
+    var mainDues = mainTotal - mainPaid - mainDiscount;
+
+    chargeGrandTotal.textContent = (mainTotal + chargesAmt).toFixed(2);
+    chargeGrandPaid.textContent = (mainPaid + chargesPaid).toFixed(2);
+    chargeGrandDues.textContent = (mainDues + chargesDues).toFixed(2);
+    noChargesHint.style.display = rows.length ? "none" : "block";
+    chargeTotalsBox.style.display = "flex"; // always visible: mirrors main payment section too
+  }
+
+  function addChargeRow(presetName){
+    chargeRowSeq++;
+    var row = document.createElement("div");
+    row.className = "charge-row";
+    row.setAttribute("data-id", "chg" + chargeRowSeq);
+    row.innerHTML =
+      '<div><label>Charge Name</label>' +
+        '<input type="text" class="cname" placeholder="e.g. AC Charge"></div>' +
+      '<div><label>Charge (₹)</label>' +
+        '<input type="number" class="camount" min="0" step="0.01" placeholder="0" value=""></div>' +
+      '<div><label>Paid (₹)</label>' +
+        '<input type="number" class="cpaid" min="0" step="0.01" placeholder="0" value=""></div>' +
+      '<div class="charge-dues-wrap"><label>Dues (₹)</label>' +
+        '<input type="text" class="cdues" readonly value="0.00"></div>' +
+      '<button type="button" class="btn-remove">Remove</button>';
+
+    var nameInput = row.querySelector(".cname");
+    var amountInput = row.querySelector(".camount");
+    var paidInput2 = row.querySelector(".cpaid");
+    var duesInput2 = row.querySelector(".cdues");
+
+    if(presetName) nameInput.value = presetName;
+
+    function recalcRow(){
+      var a = parseFloat(amountInput.value) || 0;
+      var p = parseFloat(paidInput2.value) || 0;
+      duesInput2.value = (a - p).toFixed(2);
+      recomputeChargeTotals();
+    }
+    amountInput.addEventListener("input", recalcRow);
+    paidInput2.addEventListener("input", recalcRow);
+
+    row.querySelector(".btn-remove").addEventListener("click", function(){
+      row.remove();
+      recomputeChargeTotals();
+    });
+
+    chargeRowsContainer.appendChild(row);
+    recomputeChargeTotals();
+    if(presetName){ amountInput.focus(); } else { nameInput.focus(); }
+  }
+
+  totalInput.addEventListener("input", recomputeChargeTotals);
+  paidInput.addEventListener("input", recomputeChargeTotals);
+  discountInput.addEventListener("input", recomputeChargeTotals);
+  recomputeChargeTotals();
+
+  document.querySelectorAll(".chip-btn").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      addChargeRow(btn.getAttribute("data-charge-name"));
+    });
+  });
+  document.getElementById("btnAddCharge").addEventListener("click", function(){ addChargeRow(""); });
+
+  function collectAdditionalCharges(){
+    var rows = chargeRowsContainer.querySelectorAll(".charge-row");
+    var out = [];
+    rows.forEach(function(row){
+      var name = row.querySelector(".cname").value.trim();
+      var amount = parseFloat(row.querySelector(".camount").value) || 0;
+      var paid = parseFloat(row.querySelector(".cpaid").value) || 0;
+      if(name === "" && amount === 0 && paid === 0) return; // skip fully empty rows
+      out.push({ name: name || "Additional Charge", amount: amount, paid: paid });
+    });
+    return out;
+  }
+
+  function resetChargeRows(){
+    chargeRowsContainer.innerHTML = "";
+    recomputeChargeTotals();
+  }
+
+  function downloadBase64Pdf(base64, filename){
+    try{
+      var byteChars = atob(base64);
+      var byteNumbers = new Array(byteChars.length);
+      for (var i = 0; i < byteChars.length; i++) byteNumbers[i] = byteChars.charCodeAt(i);
+      var byteArray = new Uint8Array(byteNumbers);
+      var blob = new Blob([byteArray], {type: "application/pdf"});
+      var link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = filename || "Receipt.pdf";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }catch(e){}
+  }
+
+  document.getElementById("paymentForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    var total = totalInput.value.trim();
+    var paid = paidInput.value.trim();
+    if(total === "" || isNaN(total) || Number(total) < 0){ alert("Enter a valid Total Amount."); return; }
+    if(paid === "" || isNaN(paid) || Number(paid) < 0){ alert("Enter a valid Paid Amount."); return; }
+
+    var btn = document.getElementById("submitBtn");
+    btn.disabled = true;
+    btn.textContent = "Submitting...";
+
+    var payload = {
+      key: ADMIN_KEY,
+      regNo: lookupRegNo.value.trim(),
+      studentName: document.getElementById("studentName").value,
+      mobile: document.getElementById("mobile").value,
+      email: studentEmail,
+      duration: document.getElementById("duration").value,
+      durationType: document.getElementById("durationType").value,
+      expiryDate: document.getElementById("expiryDate").value,
+      paymentSettlement: document.getElementById("paymentSettlement").value,
+      totalAmount: total,
+      paidAmount: paid,
+      discountAmount: discountInput.value.trim() || "0",
+      duesDate: duesDateInput.value || "",
+      additionalCharges: collectAdditionalCharges()
+    };
+
+    callApi("submitPayment", payload)
+      .then(function(res){
+        var box = document.getElementById("resultBox");
+        if(res.status === "success"){
+          box.className = "ok";
+          var html = "<h3>Payment Recorded!</h3>Dues: <strong>₹"+res.dues.toFixed(2)+"</strong>";
+          if(res.chargesDues && res.chargesDues > 0){
+            html += "<br>Additional Charges Dues: <strong>₹"+res.chargesDues.toFixed(2)+"</strong>";
+          }
+          html += "<br>Receipt PDF is downloading now and has been emailed to the student.";
+          if(res.whatsapp){
+            if(res.whatsapp.sent){
+              html += "<br>WhatsApp receipt sent automatically.";
+            } else if(res.whatsapp.link){
+              html += "<br><a class='wa-link' target='_blank' href='"+res.whatsapp.link+"'>Send WhatsApp Receipt</a> (tap to open WhatsApp with the bill prefilled)";
+            }
+          }
+          box.innerHTML = html;
+          if(res.pdfBase64) downloadBase64Pdf(res.pdfBase64, res.pdfName);
+          if(res.whatsapp && !res.whatsapp.sent && res.whatsapp.link){
+            window.open(res.whatsapp.link, "_blank");
+          }
+          btn.textContent = "Payment Submitted";
+          resetChargeRows();
+        } else {
+          box.className = "error";
+          box.innerHTML = "<h3>Failed</h3>"+(res.message || "Unknown error");
+          btn.disabled = false;
+          btn.textContent = "Submit Payment & Send Receipt";
+        }
+        box.style.display = "block";
+        box.scrollIntoView({behavior:"smooth", block:"center"});
+      })
+      .catch(function(err){
+        var box = document.getElementById("resultBox");
+        box.className = "error";
+        box.innerHTML = "<h3>Failed</h3>"+err.message;
+        box.style.display = "block";
+        btn.disabled = false;
+        btn.textContent = "Submit Payment & Send Receipt";
+      });
+  });
+</script>
+</body>
+</html>
