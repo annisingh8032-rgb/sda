@@ -4,7 +4,7 @@
   <base target="_top">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Spectrum Dance Academy — Payment Receipt (Admin)</title>
+  <title>Spectrum Dance Academy — Admin Dashboard</title>
   <style>
     :root{
       --purple:#4a1a7a;
@@ -181,29 +181,87 @@
     }
     .charge-totals span.d{color:var(--err);}
     #noChargesHint{font-size:12px;color:#8a7fa0;margin-bottom:10px;}
+    .field input[type=date],.field select,.field textarea{
+      width:100%;padding:9px 10px;border:1.5px solid var(--line);border-radius:8px;
+      font-size:14px;background:#fff;color:var(--ink);font-family:inherit;
+    }
+    .field textarea{min-height:60px;resize:vertical;}
+    .field input[type=date]:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--gold);outline-offset:1px;border-color:var(--purple);}
+    /* ---- payment report ---- */
+    .title-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:20px;}
+    .title-row .section-title{flex:1;margin:0;}
+    .datebox{position:relative;display:flex;align-items:center;gap:8px;background:#fff;border:2px solid var(--line);border-radius:12px;padding:6px 10px;}
+    .datebox input{border:none;outline:none;font:inherit;font-size:14px;background:transparent;color:var(--ink);min-width:110px;}
+    .datebox input::-webkit-calendar-picker-indicator{opacity:0;position:absolute;inset:0;width:100%;height:100%;cursor:pointer;}
+    .datebox svg{width:20px;height:20px;stroke:var(--purple);fill:none;stroke-width:2;pointer-events:none;}
+    .report-card{background:#fff;border:2px solid var(--purple);border-radius:14px;padding:14px;margin-top:12px;}
+    .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+    .tile{border-radius:12px;color:#fff;text-align:center;padding:16px 6px;}
+    .tile b{display:block;font-size:22px;}
+    .tile span{font-size:11.5px;letter-spacing:.3px;text-transform:uppercase;}
+    .t-all{background:linear-gradient(120deg,#e8632f,#f2b12a);}
+    .t-cash{background:linear-gradient(120deg,#26926a,#32b066);}
+    .t-online{background:linear-gradient(120deg,#3571ae,#4a90d6);}
+    .tap-link{display:block;text-align:center;color:#8a7fa0;font-size:15px;padding:26px 0 14px;cursor:pointer;}
+    #payList{display:none;border-top:1px solid var(--line);margin-top:6px;}
+    .prow{display:flex;justify-content:space-between;gap:8px;padding:9px 2px;border-bottom:1px solid #f1ecf7;font-size:13px;}
+    .prow small{color:#8a7fa0;display:block;}
+    .prow .amt{font-weight:700;color:var(--ok);white-space:nowrap;}
+    /* ---- tabs ---- */
+    .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:18px 0 14px;}
+    .tab-btn{padding:11px 4px;border:1.5px solid var(--purple);background:#fff;color:var(--purple);border-radius:10px;font-weight:700;font-size:13px;cursor:pointer;}
+    .tab-btn.active{background:var(--purple);color:#fff;}
+    .tab-pane{display:none;} .tab-pane.active{display:block;}
+    /* ---- student lists ---- */
+    .srow{background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 12px;margin-bottom:8px;display:flex;justify-content:space-between;gap:10px;align-items:center;}
+    .srow.pick{cursor:pointer;} .srow.pick:hover{border-color:var(--purple);background:#faf7ff;}
+    .srow .nm{font-weight:700;color:var(--purple-deep);}
+    .srow .sub{font-size:12px;color:#7b7090;margin-top:2px;line-height:1.5;}
+    .srow .due{color:var(--err);font-weight:700;}
+    .row-actions{display:flex;gap:6px;flex-shrink:0;}
+    .btn-sm{border:1.5px solid var(--purple);background:#fff;color:var(--purple);border-radius:7px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;}
+    .btn-sm:hover{background:var(--purple);color:#fff;}
+    .btn-sm.danger{border-color:var(--err);color:var(--err);} .btn-sm.danger:hover{background:var(--err);color:#fff;}
+    .btn-sm.ok{border-color:var(--ok);color:var(--ok);} .btn-sm.ok:hover{background:var(--ok);color:#fff;}
+    .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;font-size:13px;}
+    .detail-grid div span{display:block;font-size:11px;color:#8a7fa0;text-transform:uppercase;letter-spacing:.4px;}
+    .detail-grid div b{color:var(--ink);word-break:break-word;}
+    .add-pay-btn{width:100%;margin-top:16px;padding:12px;border:none;border-radius:10px;background:linear-gradient(120deg,var(--orange),var(--gold));color:#fff;font-weight:700;font-size:15px;cursor:pointer;}
+    .type-switch{display:flex;gap:8px;margin-bottom:14px;}
+    .type-switch button{flex:1;padding:10px;border:1.5px solid var(--purple);background:#fff;color:var(--purple);border-radius:9px;font-weight:700;cursor:pointer;}
+    .type-switch button.active{background:var(--purple);color:#fff;}
+    .toolbar{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap;}
+    .toolbar input[type=text]{flex:1;min-width:150px;padding:9px 10px;border:1.5px solid var(--line);border-radius:8px;font-size:14px;}
+    .filter-wrap{position:relative;}
+    .filter-menu{display:none;position:absolute;right:0;top:110%;background:#fff;border:1.5px solid var(--purple);border-radius:9px;min-width:170px;z-index:20;box-shadow:0 8px 20px rgba(0,0,0,.15);}
+    .filter-menu.show{display:block;}
+    .filter-menu button{display:block;width:100%;text-align:left;border:none;background:none;padding:10px 12px;font-size:13px;cursor:pointer;}
+    .filter-menu button:hover,.filter-menu button.on{background:#f4f1fa;font-weight:700;}
+    .summary-line{font-size:12.5px;color:#655a78;font-weight:600;margin-bottom:10px;}
+    .empty{text-align:center;color:#8a7fa0;padding:24px 0;font-size:13px;}
+    .modal-bg{position:fixed;inset:0;background:rgba(20,8,40,.55);display:none;align-items:center;justify-content:center;z-index:50;padding:14px;}
+    .modal-bg.show{display:flex;}
+    .modal{background:#fff;border-radius:12px;max-width:560px;width:100%;max-height:90vh;overflow:auto;padding:18px;}
+    .modal h3{margin:0 0 12px;color:var(--purple-deep);}
+    .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:14px;}
+    .btn-solid{background:var(--purple);color:#fff;border:none;border-radius:8px;padding:10px 18px;font-weight:700;cursor:pointer;}
+    .btn-solid.danger{background:var(--err);}
+    .btn-solid:disabled{opacity:.6;}
+    .btn-ghost{background:#fff;color:var(--purple);border:1.5px solid var(--purple);border-radius:8px;padding:10px 18px;font-weight:700;cursor:pointer;}
   </style>
 </head>
 <body>
 <div class="wrap">
   <header class="brand">
     <div class="brand-row" style="display:block;">
-      <!-- Index header: banner.png -> 1522 x 488 px (3.12:1). White area cropped. -->
       <img class="brand-banner" src="banner.png" alt="Spectrum Dance Academy">
-    </div>
     </div>
   </header>
 
-  <div class="admin-bar">Admin Only — Payment Receipt</div>
+  <div class="admin-bar">Admin Dashboard</div>
 
-  <!-- Hidden by request: admin key auto-connects in the background, and the
-       admission-form link is no longer shown on this admin-only page. -->
+  <!-- Hidden: admin key auto-connects, admission link not shown -->
   <div style="display:none;">
-    <div class="share-link-box" id="adminKeyBox">
-      <span class="lbl">Admin Key:</span>
-      <input type="password" id="adminKeyInput" placeholder="Enter the ADMIN_KEY from Script Properties">
-      <button type="button" id="btnUnlock">Unlock</button>
-    </div>
-
     <div class="share-link-box">
       <span class="lbl">Admission form link:</span>
       <input type="text" id="admissionFormLink" readonly>
@@ -211,193 +269,520 @@
     </div>
   </div>
 
-  <div class="card">
-    <div class="lookup-row">
-      <div class="field">
-        <label>Registration No.</label>
-        <input type="text" id="lookupRegNo" placeholder="e.g. 26001">
-      </div>
-      <button type="button" class="btn-mini" id="btnLoad">Load Student</button>
+  <!-- ===== PAYMENT REPORT (date wise) ===== -->
+  <div class="title-row">
+    <h2 class="section-title">Payment Report</h2>
+    <div class="datebox">
+      <input type="date" id="reportDate">
+      <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
     </div>
-    <div class="hint" id="lookupHint"></div>
+  </div>
+  <div class="report-card">
+    <div class="tiles">
+      <div class="tile t-all"><b id="repAll">₹0</b><span id="repAllLbl">Collected Today</span></div>
+      <div class="tile t-cash"><b id="repCash">₹0</b><span>Cash</span></div>
+      <div class="tile t-online"><b id="repOnline">₹0</b><span>Online</span></div>
+    </div>
+    <div class="tap-link" id="repTap">Tap to view all payments (0)</div>
+    <div id="payList"></div>
   </div>
 
-  <form id="paymentForm" novalidate>
-    <div id="studentInfo">
-      <h2 class="section-title">Student</h2>
-      <div class="card grid">
-        <div class="field"><label>Student Name</label><input type="text" id="studentName" readonly></div>
-        <div class="field"><label>Mobile No.</label><input type="text" id="mobile" readonly></div>
-        <div class="field"><label>Duration</label><input type="text" id="duration" readonly></div>
-        <div class="field"><label>Duration Type</label><input type="text" id="durationType" readonly></div>
-        <div class="field"><label>Expiry Date</label><input type="text" id="expiryDate" readonly></div>
-        <div class="field"><label>Payment Settlement</label><input type="text" id="paymentSettlement" readonly></div>
-      </div>
+  <!-- ===== 3 SECTIONS ===== -->
+  <div class="tabs">
+    <button type="button" class="tab-btn active" data-tab="fees">Fees Management</button>
+    <button type="button" class="tab-btn" data-tab="students">Total Students</button>
+    <button type="button" class="tab-btn" data-tab="dues">Dues</button>
+  </div>
 
-      <h2 class="section-title">Payment</h2>
-      <div class="card grid">
+  <!-- ---------- FEES MANAGEMENT ---------- -->
+  <div class="tab-pane active" id="tab-fees">
+    <div class="card">
+      <div class="lookup-row">
         <div class="field">
-          <label>Total Amount (₹) <span class="req">*</span></label>
-          <input type="number" id="totalAmount" min="0" step="0.01" inputmode="decimal" required>
+          <label>Search Student</label>
+          <input type="text" id="lookupRegNo" placeholder="Reg No, Name, Phone, Alternate No, Guardian Mobile" autocomplete="off">
         </div>
-        <div class="field">
-          <label>Paid Amount (₹) <span class="req">*</span></label>
-          <input type="number" id="paidAmount" min="0" step="0.01" inputmode="decimal" required>
-        </div>
-        <div class="field">
-          <label>Discount Amount (₹)</label>
-          <input type="number" id="discountAmount" min="0" step="0.01" inputmode="decimal">
-          <div id="discountPercentText" style="font-size:12.5px;color:var(--green,#1a8f4c);font-weight:700;margin-top:4px;"></div>
-        </div>
-        <div class="field" id="duesRow">
-          <label>Dues (₹) — auto-calculated</label>
-          <input type="text" id="dues" readonly class="locked" value="0.00">
-        </div>
-        <div class="field" id="duesDateRow" style="display:none;">
-          <label>Pay Dues By (deadline)</label>
-          <input type="date" id="duesDate">
-          <div class="hint">Sent to the student in the email, WhatsApp message &amp; receipt PDF.</div>
-        </div>
+        <button type="button" class="btn-mini" id="btnLoad">Search</button>
       </div>
-
-      <h2 class="section-title">Additional Charges</h2>
-      <div class="charge-card">
-        <div class="charge-presets" id="chargePresets">
-          <button type="button" class="chip-btn" data-charge-name="AC Charge">+ AC Charge</button>
-          <button type="button" class="chip-btn" data-charge-name="Dress Charge">+ Dress Charge</button>
-          <button type="button" class="chip-btn" data-charge-name="ID Card Charge">+ ID Card Charge</button>
-        </div>
-        <div id="chargeRowsContainer"></div>
-        <p id="noChargesHint">No additional charges added yet. Tap a quick-add button above, or "+ Add Charge" below.</p>
-        <button type="button" class="btn-add-charge" id="btnAddCharge">+ Add Charge</button>
-        <div class="charge-totals" id="chargeTotalsBox" style="display:none;">
-          <span>Total Charge: ₹<span id="chargeGrandTotal">0.00</span></span>
-          <span>Total Paid: ₹<span id="chargeGrandPaid">0.00</span></span>
-          <span>Total Dues: <span class="d">₹<span id="chargeGrandDues">0.00</span></span></span>
-        </div>
-      </div>
-
-      <div class="hint" style="margin-top:12px;padding:10px 12px;background:#fdecea;border:1px solid var(--err);border-radius:8px;color:var(--err);font-weight:600;">
-        Terms &amp; Conditions: Your money will not be refundable, as per the academy's admission terms and conditions. This note is included in the student's payment receipt email.
-      </div>
-
-      <button type="submit" class="submit-btn" id="submitBtn">Submit Payment &amp; Send Receipt</button>
+      <div class="hint" id="lookupHint"></div>
     </div>
+    <div id="searchResults" style="margin-top:10px;"></div>
+
+    <div id="studentCard" style="display:none;">
+      <h2 class="section-title">Student Details</h2>
+      <div class="card">
+        <div class="detail-grid">
+          <div><span>Reg No</span><b id="sd_regNo"></b></div>
+          <div><span>Name</span><b id="sd_name"></b></div>
+          <div><span>Phone No</span><b id="sd_mobile"></b></div>
+          <div><span>Batch Time</span><b id="sd_batch"></b></div>
+          <div><span>Admission Date</span><b id="sd_adm"></b></div>
+          <div><span>Expiry Date</span><b id="sd_exp"></b></div>
+          <div><span>Category</span><b id="sd_cat"></b></div>
+          <div><span>Duration</span><b id="sd_dur"></b></div>
+          <div><span>Dues</span><b id="sd_dues"></b></div>
+        </div>
+        <button type="button" class="add-pay-btn" id="btnAddPayment">+ Add Payment</button>
+      </div>
+    </div>
+
+    <form id="paymentForm" novalidate style="display:none;">
+      <h2 class="section-title">Add Payment</h2>
+      <div class="card">
+        <div class="type-switch" id="typeSwitch" style="display:none;">
+          <button type="button" id="typeDues">Dues Collect</button>
+          <button type="button" id="typeMonthly">Monthly Payment</button>
+        </div>
+
+        <div class="grid">
+          <div class="field">
+            <label>Payment Date</label>
+            <input type="date" id="payDate">
+          </div>
+          <div class="field">
+            <label>Payment Mode <span class="req">*</span></label>
+            <select id="payMode"><option>Cash</option><option>Online</option></select>
+          </div>
+        </div>
+
+        <!-- DUES COLLECT PANEL -->
+        <div id="panelDues">
+          <div class="grid">
+            <div class="field"><label>Dues Type</label><input type="text" id="dc_type" readonly></div>
+            <div class="field"><label>Duration</label><input type="text" id="dc_dur" readonly></div>
+            <div class="field"><label>Session Date → Expiry</label><input type="text" id="dc_exp" readonly></div>
+            <div class="field"><label>Total Amount (₹)</label><input type="text" id="dc_total" readonly></div>
+            <div class="field"><label>Paid Till Now (₹)</label><input type="text" id="dc_paid" readonly></div>
+            <div class="field"><label>Pending Dues (₹)</label><input type="text" id="dc_pending" readonly class="locked"></div>
+            <div class="field">
+              <label>Dues Amount Collecting (₹) <span class="req">*</span></label>
+              <input type="number" id="dc_collect" min="0" step="0.01" inputmode="decimal">
+            </div>
+            <div class="field"><label>Remaining Dues (₹)</label><input type="text" id="dc_remaining" readonly class="locked" value="0.00"></div>
+            <div class="field" id="dc_dateRow" style="display:none;">
+              <label>Pay Remaining Dues By</label>
+              <input type="date" id="dc_date">
+            </div>
+          </div>
+        </div>
+
+        <!-- MONTHLY PANEL -->
+        <div id="panelMonthly" style="display:none;">
+          <div class="grid">
+            <div class="field">
+              <label>Session Date (from expiry)</label>
+              <input type="date" id="sessionDate">
+            </div>
+            <div class="field">
+              <label>Duration <span class="req">*</span></label>
+              <input type="number" id="payDuration" min="1" step="1" inputmode="numeric">
+            </div>
+            <div class="field">
+              <label>Duration Type <span class="req">*</span></label>
+              <select id="payDurType">
+                <option value="">Select</option>
+                <option value="Day">Days</option>
+                <option value="Month">Month</option>
+                <option value="Year">Year</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>New Expiry Date</label>
+              <input type="text" id="newExpiry" readonly placeholder="Auto-calculated">
+            </div>
+            <div class="field">
+              <label>Total Amount (₹) <span class="req">*</span></label>
+              <input type="number" id="totalAmount" min="0" step="0.01" inputmode="decimal">
+            </div>
+            <div class="field">
+              <label>Paid Amount (₹) <span class="req">*</span></label>
+              <input type="number" id="paidAmount" min="0" step="0.01" inputmode="decimal">
+            </div>
+            <div class="field">
+              <label>Discount Amount (₹)</label>
+              <input type="number" id="discountAmount" min="0" step="0.01" inputmode="decimal">
+              <div id="discountPercentText" style="font-size:12.5px;color:#1a8f4c;font-weight:700;margin-top:4px;"></div>
+            </div>
+            <div class="field" id="duesRow">
+              <label>Dues (₹) — auto-calculated</label>
+              <input type="text" id="dues" readonly class="locked" value="0.00">
+            </div>
+            <div class="field" id="duesDateRow" style="display:none;">
+              <label>Dues Date (pay by)</label>
+              <input type="date" id="duesDate">
+              <div class="hint">Sent to the student in the WhatsApp message &amp; receipt.</div>
+            </div>
+          </div>
+
+          <h2 class="section-title">Additional Charges</h2>
+          <div class="charge-card" style="margin-top:0;">
+            <div class="charge-presets" id="chargePresets">
+              <button type="button" class="chip-btn" data-charge-name="AC Charge">+ AC Charge</button>
+              <button type="button" class="chip-btn" data-charge-name="Dress Charge">+ Dress Charge</button>
+              <button type="button" class="chip-btn" data-charge-name="ID Card Charge">+ ID Card Charge</button>
+            </div>
+            <div id="chargeRowsContainer"></div>
+            <p id="noChargesHint">No additional charges added yet. Tap a quick-add button above, or "+ Add Charge" below.</p>
+            <button type="button" class="btn-add-charge" id="btnAddCharge">+ Add Charge</button>
+            <div class="charge-totals" id="chargeTotalsBox" style="display:none;">
+              <span>Total Charge: ₹<span id="chargeGrandTotal">0.00</span></span>
+              <span>Total Paid: ₹<span id="chargeGrandPaid">0.00</span></span>
+              <span>Total Dues: <span class="d">₹<span id="chargeGrandDues">0.00</span></span></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hint" style="margin-top:12px;padding:10px 12px;background:#fdecea;border:1px solid var(--err);border-radius:8px;color:var(--err);font-weight:600;">
+          Terms &amp; Conditions: Your money will not be refundable, as per the academy's admission terms and conditions. This note is included in the student's payment receipt.
+        </div>
+        <button type="submit" class="submit-btn" id="submitBtn">Submit Payment &amp; Send on WhatsApp</button>
+      </div>
+    </form>
     <div id="resultBox"></div>
-  </form>
+  </div>
+
+  <!-- ---------- TOTAL STUDENTS ---------- -->
+  <div class="tab-pane" id="tab-students">
+    <div class="toolbar">
+      <input type="text" id="stFilter" placeholder="Filter by name, reg no, phone...">
+      <button type="button" class="btn-sm" id="btnReloadStudents">Refresh</button>
+    </div>
+    <div class="summary-line" id="stCount"></div>
+    <div id="stList"></div>
+  </div>
+
+  <!-- ---------- DUES ---------- -->
+  <div class="tab-pane" id="tab-dues">
+    <div class="toolbar">
+      <div class="summary-line" id="dueSummary" style="flex:1;margin:0;"></div>
+      <div class="filter-wrap">
+        <button type="button" class="btn-sm" id="btnFilter">⚲ Filter: <span id="filterLbl">All</span></button>
+        <div class="filter-menu" id="filterMenu">
+          <button type="button" data-f="all" class="on">All Dues</button>
+          <button type="button" data-f="Admission">Admission Dues</button>
+          <button type="button" data-f="Monthly">Monthly Dues</button>
+        </div>
+      </div>
+    </div>
+    <div id="dueList"></div>
+  </div>
 </div>
 
-<script>
-  // ==== BACKEND CONNECTION =====================================
-  // Paste the SAME Apps Script Web App URL used in Index.html
-  var WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzLUghnI4QXXcElOVTa43Ify1MOPo9kWbYHKdmUvO0NRPzU4qK3AvTGy2gVOPoW3py8Uw/exec";
+<!-- Delete confirm -->
+<div class="modal-bg" id="delModal">
+  <div class="modal" style="max-width:380px;">
+    <h3>Delete student?</h3>
+    <p id="delText" style="font-size:14px;"></p>
+    <div class="modal-actions">
+      <button type="button" class="btn-ghost" id="delCancel">Cancel</button>
+      <button type="button" class="btn-solid danger" id="delOk">Yes, Delete</button>
+    </div>
+  </div>
+</div>
 
+<!-- Edit student -->
+<div class="modal-bg" id="editModal">
+  <div class="modal">
+    <h3>Edit Student — <span id="editReg"></span></h3>
+    <div class="grid" id="editFields"></div>
+    <div class="hint" id="editMsg"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn-ghost" id="editCancel">Cancel</button>
+      <button type="button" class="btn-solid" id="editSave">Save Changes</button>
+    </div>
+  </div>
+</div>
+<script>
+  // ==== BACKEND CONNECTION (same Apps Script Web App URL as Index.html) ====
+  var WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzLUghnI4QXXcElOVTa43Ify1MOPo9kWbYHKdmUvO0NRPzU4qK3AvTGy2gVOPoW3py8Uw/exec";
   function callApi(action, payload) {
     return fetch(WEB_APP_URL, {
       method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" }, // avoids CORS preflight
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify({ action: action, payload: payload || {} })
     }).then(function (r) { return r.json(); });
   }
 
-  // This page is opened as: payment.html?regNo=26001&key=sda2026
-  // regNo changes per student automatically — it comes from the link in each
-  // "New Admission" email, so opening that link always loads the right student.
-  // FALLBACK_ADMIN_KEY is used only if the link is ever opened without ?key=
-  // (e.g. someone bookmarked the bare URL), so the admin never has to type
-  // anything manually.
   var FALLBACK_ADMIN_KEY = "sda2026";
   var urlParams = new URLSearchParams(window.location.search);
   var ADMIN_KEY = urlParams.get("key") || FALLBACK_ADMIN_KEY;
-  var studentEmail = "";
-
-  // ==== Set this to your Netlify Index.html (admission form) URL ====
   var ADMISSION_FORM_URL = "https://sdaadmissionfrom.netlify.app/";
+
+  // ---- helpers ----
+  function $(id){ return document.getElementById(id); }
+  function pad(n){ return n < 10 ? "0" + n : "" + n; }
+  function num(v){ return parseFloat(v) || 0; }
+  function esc(s){ return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+  function money(n){ return "₹" + Number(n || 0).toLocaleString("en-IN", {maximumFractionDigits:2}); }
+  function fmtDMY(d){ return pad(d.getDate()) + "/" + pad(d.getMonth()+1) + "/" + d.getFullYear(); }
+  function toISO(d){ return d.getFullYear() + "-" + pad(d.getMonth()+1) + "-" + pad(d.getDate()); }
+  function parseDMY(s){
+    var m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(String(s || "").trim());
+    return m ? new Date(+m[3], +m[2]-1, +m[1]) : null;
+  }
+  function fromISO(s){
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || "");
+    return m ? new Date(+m[1], +m[2]-1, +m[3]) : null;
+  }
+  function isoToDMY(s){ var d = fromISO(s); return d ? fmtDMY(d) : ""; }
+  function dmyToISO(s){ var d = parseDMY(s); return d ? toISO(d) : ""; }
+  // Month/Year add with end-of-month clamp (31 Jan + 1 month = 28/29 Feb)
+  function addDuration(d, n, type){
+    var r = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    if(type === "Day"){ r.setDate(r.getDate() + n); return r; }
+    var months = type === "Year" ? n * 12 : n;
+    var day = r.getDate();
+    r.setDate(1);
+    r.setMonth(r.getMonth() + months);
+    var last = new Date(r.getFullYear(), r.getMonth() + 1, 0).getDate();
+    r.setDate(Math.min(day, last));
+    return r;
+  }
+  function norm(s){ return String(s == null ? "" : s).toLowerCase().trim(); }
+  function show(el, on){ el.style.display = on ? "block" : "none"; }
+
+  // ---- batches (same as Index.html) ----
+  var DANCE_FITNESS_BATCHES = [
+    {t:"06:30 AM - 08:00 AM D-1", d:"6 days/week (Mon-Sat)"},
+    {t:"08:00 AM - 09:30 AM D-2", d:"6 days/week (Mon-Sat)"},
+    {t:"09:30 AM - 11:00 AM D-3", d:"6 days/week (Mon-Sat)"},
+    {t:"04:00 PM - 05:30 PM D-6", d:"6 days/week (Mon-Sat)"},
+    {t:"05:30 PM - 06:30 PM D-5", d:"6 days/week (Mon-Sat)"},
+    {t:"06:30 PM - 08:00 PM D-7", d:"6 days/week (Mon-Sat)"}
+  ];
+  var BATCHES = {"Dance":DANCE_FITNESS_BATCHES,"Fitness":DANCE_FITNESS_BATCHES,"Singing":[],"Guitar":[],"Acting":[],"Painting":[],"Modeling":[]};
+  var NO_FIXED_BATCH_MSG = "To be informed directly by our teacher";
+
+  // hidden admission link copy (kept from old page)
   (function(){
-    var linkInput = document.getElementById("admissionFormLink");
-    linkInput.value = ADMISSION_FORM_URL;
-    document.getElementById("btnCopyFormLink").addEventListener("click", function(){
-      linkInput.select();
-      linkInput.setSelectionRange(0, 99999);
-      try{
-        navigator.clipboard.writeText(ADMISSION_FORM_URL).then(function(){
-          var btn = document.getElementById("btnCopyFormLink");
-          var original = btn.textContent;
-          btn.textContent = "Copied!";
-          setTimeout(function(){ btn.textContent = original; }, 1500);
-        });
-      } catch(e){
-        document.execCommand("copy");
-      }
+    var li = $("admissionFormLink"); li.value = ADMISSION_FORM_URL;
+    $("btnCopyFormLink").addEventListener("click", function(){
+      try{ navigator.clipboard.writeText(ADMISSION_FORM_URL); }catch(e){}
     });
   })();
 
-  var lookupRegNo = document.getElementById("lookupRegNo");
-  var studentInfo = document.getElementById("studentInfo");
-  var lookupHint = document.getElementById("lookupHint");
+  // ============ STATE ============
+  var STUDENTS = [];
+  var studentsLoaded = false;
+  var current = null;      // student chosen in Fees Management
+  var payType = "monthly"; // "dues" | "monthly"
+  var duesFilter = "all";
 
-  // Auto-fill Registration No from the URL (?regNo=26001), if present
-  lookupRegNo.value = urlParams.get("regNo") || "";
+  function studentDues(s){ return num(s.dues); }
+  function studentDuesType(s){
+    if(s.duesType) return /month/i.test(s.duesType) ? "Monthly" : "Admission";
+    return /month/i.test(s.paymentSettlement || "") ? "Monthly" : "Admission";
+  }
 
-  function loadStudent(){
-    var regNo = lookupRegNo.value.trim();
-    if(!regNo){ lookupHint.textContent = "Enter a Registration No first."; return; }
-    if(!ADMIN_KEY){ lookupHint.textContent = "Missing admin key in the link (?key=...)."; return; }
-    lookupHint.textContent = "Loading...";
-    callApi("getStudentForPayment", { regNo: regNo, adminKey: ADMIN_KEY })
+  // ============ TABS ============
+  document.querySelectorAll(".tab-btn").forEach(function(b){
+    b.addEventListener("click", function(){
+      document.querySelectorAll(".tab-btn").forEach(function(x){ x.classList.remove("active"); });
+      document.querySelectorAll(".tab-pane").forEach(function(x){ x.classList.remove("active"); });
+      b.classList.add("active");
+      $("tab-" + b.getAttribute("data-tab")).classList.add("active");
+      renderStudents(); renderDues();
+    });
+  });
+
+  // ============ PAYMENT REPORT ============
+  var reportDate = $("reportDate");
+  reportDate.value = toISO(new Date());
+  reportDate.addEventListener("click", function(){ try{ reportDate.showPicker(); }catch(e){} });
+  reportDate.addEventListener("change", loadReport);
+  $("repTap").addEventListener("click", function(){
+    var l = $("payList"); l.style.display = l.style.display === "block" ? "none" : "block";
+  });
+  function loadReport(){
+    var iso = reportDate.value || toISO(new Date());
+    var isToday = iso === toISO(new Date());
+    $("repAllLbl").textContent = isToday ? "Collected Today" : "Collected";
+    callApi("getPaymentReport", { adminKey: ADMIN_KEY, date: isoToDMY(iso) })
       .then(function(res){
-        if(res.status === "success"){
-          document.getElementById("studentName").value = res.studentName || "";
-          document.getElementById("mobile").value = res.mobile || "";
-          document.getElementById("duration").value = res.duration || "";
-          document.getElementById("durationType").value = res.durationType || "";
-          document.getElementById("expiryDate").value = res.expiryDate || "";
-          document.getElementById("paymentSettlement").value = res.paymentSettlement || "";
-          studentEmail = res.email || "";
-          studentInfo.style.display = "block";
-          lookupHint.textContent = "Loaded: " + res.studentName;
-        } else {
-          studentInfo.style.display = "none";
-          lookupHint.textContent = res.message || "Not found.";
+        if(res.status !== "success") throw new Error(res.message || "Report unavailable");
+        var list = res.payments || [];
+        $("repAll").textContent = money(res.total);
+        $("repCash").textContent = money(res.cash);
+        $("repOnline").textContent = money(res.online);
+        $("repTap").textContent = "Tap to view all payments (" + list.length + ")";
+        $("payList").innerHTML = list.length ? list.map(function(p){
+          return '<div class="prow"><div><b>' + esc(p.studentName) + '</b> · ' + esc(p.regNo) +
+            '<small>' + esc(p.mode) + ' · ' + esc(p.type) + (p.time ? ' · ' + esc(p.time) : '') + '</small></div>' +
+            '<div class="amt">' + money(p.amount) + '</div></div>';
+        }).join("") : '<div class="empty">No payments on this date.</div>';
+      })
+      .catch(function(err){
+        $("repAll").textContent = $("repCash").textContent = $("repOnline").textContent = "₹0";
+        $("repTap").textContent = "Report not available (" + err.message + ")";
+      });
+  }
+
+  // ============ LOAD ALL STUDENTS ============
+  function loadStudents(){
+    return callApi("getAllStudents", { adminKey: ADMIN_KEY })
+      .then(function(res){
+        if(res.status !== "success") throw new Error(res.message || "Could not load students");
+        STUDENTS = res.students || [];
+        studentsLoaded = true;
+        renderStudents(); renderDues();
+        if(current){
+          var fresh = STUDENTS.filter(function(s){ return String(s.regNo) === String(current.regNo); })[0];
+          if(fresh){ current = fresh; fillStudentCard(); }
         }
       })
       .catch(function(err){
-        lookupHint.textContent = "Error: " + err.message;
+        studentsLoaded = false;
+        var msg = '<div class="empty">Student list not available: ' + esc(err.message) + '<br>(Backend me "getAllStudents" add karna hoga.)</div>';
+        $("stList").innerHTML = msg; $("dueList").innerHTML = msg;
       });
   }
-  document.getElementById("btnLoad").addEventListener("click", loadStudent);
-  if(lookupRegNo.value.trim()) loadStudent();
 
-  var totalInput = document.getElementById("totalAmount");
-  var paidInput = document.getElementById("paidAmount");
-  var duesInput = document.getElementById("dues");
-  var discountInput = document.getElementById("discountAmount");
-  var discountPercentText = document.getElementById("discountPercentText");
-  var duesDateRow = document.getElementById("duesDateRow");
-  var duesDateInput = document.getElementById("duesDate");
-  function recomputeDues(){
-    var t = parseFloat(totalInput.value) || 0;
-    var p = parseFloat(paidInput.value) || 0;
-    var d = parseFloat(discountInput.value) || 0;
-    var dues = t - p - d;
-    duesInput.value = dues.toFixed(2);
-    // Only ask for a dues deadline when something is actually still owed.
-    if(dues > 0){
-      duesDateRow.style.display = "block";
-    } else {
-      duesDateRow.style.display = "none";
-      duesDateInput.value = "";
+  // ============ FEES MANAGEMENT: SEARCH ============
+  var lookupInput = $("lookupRegNo"), lookupHint = $("lookupHint"), resultsBox = $("searchResults");
+  function searchStudents(q){
+    q = norm(q); if(!q) return [];
+    return STUDENTS.filter(function(s){
+      return [s.regNo, s.studentName, s.mobile, s.altMobile, s.guardianMobile].some(function(v){ return norm(v).indexOf(q) > -1; });
+    }).slice(0, 30);
+  }
+  function renderResults(list){
+    if(!list.length){ resultsBox.innerHTML = ""; return; }
+    resultsBox.innerHTML = list.map(function(s, i){
+      return '<div class="srow pick" data-i="' + i + '"><div><div class="nm">' + esc(s.studentName) + '</div>' +
+        '<div class="sub">Reg ' + esc(s.regNo) + ' · ' + esc(s.mobile) + (s.interestedFor ? ' · ' + esc(s.interestedFor) : '') + '</div></div>' +
+        (studentDues(s) > 0 ? '<div class="due">Dues ' + money(studentDues(s)) + '</div>' : '') + '</div>';
+    }).join("");
+    resultsBox.querySelectorAll(".srow").forEach(function(row){
+      row.addEventListener("click", function(){ selectStudent(list[+row.getAttribute("data-i")]); });
+    });
+  }
+  function doSearch(force){
+    var q = lookupInput.value.trim();
+    if(!q){ lookupHint.textContent = ""; resultsBox.innerHTML = ""; return; }
+    var list = searchStudents(q);
+    if(list.length){
+      lookupHint.textContent = list.length + " student(s) found";
+      if(force && list.length === 1){ selectStudent(list[0]); return; }
+      var exact = list.filter(function(s){ return norm(s.regNo) === norm(q); });
+      if(force && exact.length === 1){ selectStudent(exact[0]); return; }
+      renderResults(list);
+      return;
     }
+    resultsBox.innerHTML = "";
+    if(!force){ lookupHint.textContent = studentsLoaded ? "No match yet..." : ""; return; }
+    // Fallback: old single-student lookup by Registration No (works even if getAllStudents is not set up)
+    lookupHint.textContent = "Searching...";
+    callApi("getStudentForPayment", { regNo: q, adminKey: ADMIN_KEY }).then(function(res){
+      if(res.status === "success"){
+        res.regNo = res.regNo || q;
+        selectStudent(res);
+      } else lookupHint.textContent = res.message || "No student found.";
+    }).catch(function(err){ lookupHint.textContent = "Error: " + err.message; });
+  }
+  lookupInput.addEventListener("input", function(){ doSearch(false); });
+  lookupInput.addEventListener("keydown", function(e){ if(e.key === "Enter"){ e.preventDefault(); doSearch(true); } });
+  $("btnLoad").addEventListener("click", function(){ doSearch(true); });
+
+  function selectStudent(s){
+    current = s;
+    resultsBox.innerHTML = "";
+    lookupHint.textContent = "Loaded: " + (s.studentName || "");
+    fillStudentCard();
+    show($("studentCard"), true);
+    show($("paymentForm"), false);
+    $("resultBox").style.display = "none";
+    $("studentCard").scrollIntoView({behavior:"smooth", block:"start"});
+  }
+  function fillStudentCard(){
+    var s = current;
+    $("sd_regNo").textContent = s.regNo || "-";
+    $("sd_name").textContent = s.studentName || "-";
+    $("sd_mobile").textContent = s.mobile || "-";
+    $("sd_batch").textContent = s.batchTime || "-";
+    $("sd_adm").textContent = s.admissionDate || "-";
+    $("sd_exp").textContent = s.expiryDate || "-";
+    $("sd_cat").textContent = s.interestedFor || "-";
+    $("sd_dur").textContent = s.duration ? (s.duration + " " + (s.durationType || "")) : "-";
+    var d = studentDues(s);
+    $("sd_dues").textContent = money(d) + (d > 0 ? " (" + studentDuesType(s) + ")" : "");
+    $("sd_dues").style.color = d > 0 ? "var(--err)" : "var(--ok)";
+  }
+
+  // ============ ADD PAYMENT ============
+  var totalInput = $("totalAmount"), paidInput = $("paidAmount"), discountInput = $("discountAmount");
+  var duesInput = $("dues"), duesDateRow = $("duesDateRow"), duesDateInput = $("duesDate");
+  var discountPercentText = $("discountPercentText");
+
+  $("btnAddPayment").addEventListener("click", function(){
+    if(!current) return;
+    $("paymentForm").reset();
+    resetChargeRows();
+    $("resultBox").style.display = "none";
+    var btn = $("submitBtn"); btn.disabled = false; btn.textContent = "Submit Payment & Send on WhatsApp";
+    $("payDate").value = toISO(new Date());
+    // session date = student's current expiry date (auto)
+    $("sessionDate").value = dmyToISO(current.expiryDate) || toISO(new Date());
+    var hasDues = studentDues(current) > 0;
+    show($("typeSwitch"), hasDues);
+    $("typeSwitch").style.display = hasDues ? "flex" : "none";
+    fillDuesPanel();
+    setType(hasDues ? "dues" : "monthly");
+    recomputeDues(); recomputeNewExpiry();
+    show($("paymentForm"), true);
+    $("paymentForm").scrollIntoView({behavior:"smooth", block:"start"});
+  });
+
+  function setType(t){
+    payType = t;
+    $("typeDues").classList.toggle("active", t === "dues");
+    $("typeMonthly").classList.toggle("active", t === "monthly");
+    show($("panelDues"), t === "dues");
+    show($("panelMonthly"), t === "monthly");
+  }
+  $("typeDues").addEventListener("click", function(){ setType("dues"); });
+  $("typeMonthly").addEventListener("click", function(){ setType("monthly"); });
+
+  // --- Dues Collect: all old admission details are auto-filled ---
+  function fillDuesPanel(){
+    var s = current, pending = studentDues(s);
+    $("dc_type").value = studentDuesType(s) + " Dues";
+    $("dc_dur").value = s.duration ? s.duration + " " + (s.durationType || "") : "";
+    $("dc_exp").value = (s.admissionDate ? s.admissionDate + " → " : "") + (s.expiryDate || "");
+    $("dc_total").value = s.totalAmount ? num(s.totalAmount).toFixed(2) : "";
+    $("dc_paid").value = s.paidAmount ? num(s.paidAmount).toFixed(2) : "";
+    $("dc_pending").value = pending.toFixed(2);
+    $("dc_remaining").value = pending.toFixed(2);
+    $("dc_collect").value = "";
+    $("dc_date").value = "";
+    show($("dc_dateRow"), pending > 0);
+  }
+  $("dc_collect").addEventListener("input", function(){
+    var rem = studentDues(current) - num(this.value);
+    $("dc_remaining").value = rem.toFixed(2);
+    show($("dc_dateRow"), rem > 0);
+    if(rem <= 0) $("dc_date").value = "";
+  });
+
+  // --- Monthly: expiry auto-generated from session date + duration ---
+  function recomputeNewExpiry(){
+    var n = parseInt($("payDuration").value, 10), t = $("payDurType").value, base = fromISO($("sessionDate").value);
+    if(!n || n < 1 || !t || !base){ $("newExpiry").value = ""; return; }
+    $("newExpiry").value = fmtDMY(addDuration(base, n, t));
+  }
+  ["payDuration","payDurType","sessionDate"].forEach(function(id){
+    $(id).addEventListener("input", recomputeNewExpiry);
+    $(id).addEventListener("change", recomputeNewExpiry);
+  });
+
+  function recomputeDues(){
+    var dues = num(totalInput.value) - num(paidInput.value) - num(discountInput.value);
+    duesInput.value = dues.toFixed(2);
+    if(dues > 0){ duesDateRow.style.display = "block"; }
+    else { duesDateRow.style.display = "none"; duesDateInput.value = ""; }
   }
   function recomputeDiscountPercent(){
-    var t = parseFloat(totalInput.value) || 0;
-    var d = parseFloat(discountInput.value) || 0;
-    if(t > 0 && d > 0){
-      var pct = (d / t) * 100;
-      discountPercentText.textContent = "Discount " + (Math.round(pct * 10) / 10) + "%";
-    } else {
-      discountPercentText.textContent = "";
-    }
+    var t = num(totalInput.value), d = num(discountInput.value);
+    discountPercentText.textContent = (t > 0 && d > 0) ? "Discount " + (Math.round(d / t * 1000) / 10) + "%" : "";
   }
   totalInput.addEventListener("input", recomputeDues);
   paidInput.addEventListener("input", recomputeDues);
@@ -405,201 +790,341 @@
   totalInput.addEventListener("input", recomputeDiscountPercent);
   discountInput.addEventListener("input", recomputeDiscountPercent);
 
-  // ==== ADDITIONAL CHARGES (AC charge, dress charge, ID card charge, etc.) ====
-  // Admin can quick-add a preset charge (chips below) or add a blank row with
-  // "+ Add Charge". Each row has its own Charge amount, Paid amount and an
-  // auto-calculated Dues amount. Every row that has a name and/or amount gets
-  // sent to the backend and appears in the payment receipt email, PDF and
-  // WhatsApp message alongside the main course fee.
-  var chargeRowsContainer = document.getElementById("chargeRowsContainer");
-  var noChargesHint = document.getElementById("noChargesHint");
-  var chargeTotalsBox = document.getElementById("chargeTotalsBox");
-  var chargeGrandTotal = document.getElementById("chargeGrandTotal");
-  var chargeGrandPaid = document.getElementById("chargeGrandPaid");
-  var chargeGrandDues = document.getElementById("chargeGrandDues");
+  // ==== ADDITIONAL CHARGES (unchanged logic) ====
+  var chargeRowsContainer = $("chargeRowsContainer"), noChargesHint = $("noChargesHint");
+  var chargeTotalsBox = $("chargeTotalsBox"), chargeGrandTotal = $("chargeGrandTotal");
+  var chargeGrandPaid = $("chargeGrandPaid"), chargeGrandDues = $("chargeGrandDues");
   var chargeRowSeq = 0;
 
   function recomputeChargeTotals(){
     var rows = chargeRowsContainer.querySelectorAll(".charge-row");
-    var chargesAmt = 0, chargesPaid = 0, chargesDues = 0;
+    var cAmt = 0, cPaid = 0, cDues = 0;
     rows.forEach(function(row){
-      var a = parseFloat(row.querySelector(".camount").value) || 0;
-      var p = parseFloat(row.querySelector(".cpaid").value) || 0;
-      chargesAmt += a; chargesPaid += p; chargesDues += (a - p);
+      var a = num(row.querySelector(".camount").value), p = num(row.querySelector(".cpaid").value);
+      cAmt += a; cPaid += p; cDues += (a - p);
     });
-
-    // Combine with the main Payment section so this box always shows the
-    // grand total (course fee + additional charges), not just the charges.
-    var mainTotal = parseFloat(totalInput.value) || 0;
-    var mainPaid = parseFloat(paidInput.value) || 0;
-    var mainDiscount = parseFloat(discountInput.value) || 0;
-    var mainDues = mainTotal - mainPaid - mainDiscount;
-
-    chargeGrandTotal.textContent = (mainTotal + chargesAmt).toFixed(2);
-    chargeGrandPaid.textContent = (mainPaid + chargesPaid).toFixed(2);
-    chargeGrandDues.textContent = (mainDues + chargesDues).toFixed(2);
+    var mt = num(totalInput.value), mp = num(paidInput.value), md = mt - mp - num(discountInput.value);
+    chargeGrandTotal.textContent = (mt + cAmt).toFixed(2);
+    chargeGrandPaid.textContent = (mp + cPaid).toFixed(2);
+    chargeGrandDues.textContent = (md + cDues).toFixed(2);
     noChargesHint.style.display = rows.length ? "none" : "block";
-    chargeTotalsBox.style.display = "flex"; // always visible: mirrors main payment section too
+    chargeTotalsBox.style.display = "flex";
   }
-
   function addChargeRow(presetName){
     chargeRowSeq++;
     var row = document.createElement("div");
     row.className = "charge-row";
-    row.setAttribute("data-id", "chg" + chargeRowSeq);
     row.innerHTML =
-      '<div><label>Charge Name</label>' +
-        '<input type="text" class="cname" placeholder="e.g. AC Charge"></div>' +
-      '<div><label>Charge (₹)</label>' +
-        '<input type="number" class="camount" min="0" step="0.01" placeholder="0" value=""></div>' +
-      '<div><label>Paid (₹)</label>' +
-        '<input type="number" class="cpaid" min="0" step="0.01" placeholder="0" value=""></div>' +
-      '<div class="charge-dues-wrap"><label>Dues (₹)</label>' +
-        '<input type="text" class="cdues" readonly value="0.00"></div>' +
+      '<div><label>Charge Name</label><input type="text" class="cname" placeholder="e.g. AC Charge"></div>' +
+      '<div><label>Charge (₹)</label><input type="number" class="camount" min="0" step="0.01" placeholder="0"></div>' +
+      '<div><label>Paid (₹)</label><input type="number" class="cpaid" min="0" step="0.01" placeholder="0"></div>' +
+      '<div class="charge-dues-wrap"><label>Dues (₹)</label><input type="text" class="cdues" readonly value="0.00"></div>' +
       '<button type="button" class="btn-remove">Remove</button>';
-
-    var nameInput = row.querySelector(".cname");
-    var amountInput = row.querySelector(".camount");
-    var paidInput2 = row.querySelector(".cpaid");
-    var duesInput2 = row.querySelector(".cdues");
-
-    if(presetName) nameInput.value = presetName;
-
-    function recalcRow(){
-      var a = parseFloat(amountInput.value) || 0;
-      var p = parseFloat(paidInput2.value) || 0;
-      duesInput2.value = (a - p).toFixed(2);
-      recomputeChargeTotals();
-    }
-    amountInput.addEventListener("input", recalcRow);
-    paidInput2.addEventListener("input", recalcRow);
-
-    row.querySelector(".btn-remove").addEventListener("click", function(){
-      row.remove();
-      recomputeChargeTotals();
-    });
-
+    var nameI = row.querySelector(".cname"), amtI = row.querySelector(".camount"), paidI = row.querySelector(".cpaid"), duesI = row.querySelector(".cdues");
+    if(presetName) nameI.value = presetName;
+    function recalc(){ duesI.value = (num(amtI.value) - num(paidI.value)).toFixed(2); recomputeChargeTotals(); }
+    amtI.addEventListener("input", recalc); paidI.addEventListener("input", recalc);
+    row.querySelector(".btn-remove").addEventListener("click", function(){ row.remove(); recomputeChargeTotals(); });
     chargeRowsContainer.appendChild(row);
     recomputeChargeTotals();
-    if(presetName){ amountInput.focus(); } else { nameInput.focus(); }
+    (presetName ? amtI : nameI).focus();
   }
-
-  totalInput.addEventListener("input", recomputeChargeTotals);
-  paidInput.addEventListener("input", recomputeChargeTotals);
-  discountInput.addEventListener("input", recomputeChargeTotals);
-  recomputeChargeTotals();
-
-  document.querySelectorAll(".chip-btn").forEach(function(btn){
-    btn.addEventListener("click", function(){
-      addChargeRow(btn.getAttribute("data-charge-name"));
-    });
-  });
-  document.getElementById("btnAddCharge").addEventListener("click", function(){ addChargeRow(""); });
-
   function collectAdditionalCharges(){
-    var rows = chargeRowsContainer.querySelectorAll(".charge-row");
     var out = [];
-    rows.forEach(function(row){
+    chargeRowsContainer.querySelectorAll(".charge-row").forEach(function(row){
       var name = row.querySelector(".cname").value.trim();
-      var amount = parseFloat(row.querySelector(".camount").value) || 0;
-      var paid = parseFloat(row.querySelector(".cpaid").value) || 0;
-      if(name === "" && amount === 0 && paid === 0) return; // skip fully empty rows
+      var amount = num(row.querySelector(".camount").value), paid = num(row.querySelector(".cpaid").value);
+      if(name === "" && amount === 0 && paid === 0) return;
       out.push({ name: name || "Additional Charge", amount: amount, paid: paid });
     });
     return out;
   }
-
-  function resetChargeRows(){
-    chargeRowsContainer.innerHTML = "";
-    recomputeChargeTotals();
-  }
+  function resetChargeRows(){ chargeRowsContainer.innerHTML = ""; recomputeChargeTotals(); }
+  totalInput.addEventListener("input", recomputeChargeTotals);
+  paidInput.addEventListener("input", recomputeChargeTotals);
+  discountInput.addEventListener("input", recomputeChargeTotals);
+  document.querySelectorAll(".chip-btn").forEach(function(btn){
+    btn.addEventListener("click", function(){ addChargeRow(btn.getAttribute("data-charge-name")); });
+  });
+  $("btnAddCharge").addEventListener("click", function(){ addChargeRow(""); });
+  recomputeChargeTotals();
 
   function downloadBase64Pdf(base64, filename){
     try{
-      var byteChars = atob(base64);
-      var byteNumbers = new Array(byteChars.length);
-      for (var i = 0; i < byteChars.length; i++) byteNumbers[i] = byteChars.charCodeAt(i);
-      var byteArray = new Uint8Array(byteNumbers);
-      var blob = new Blob([byteArray], {type: "application/pdf"});
+      var bytes = atob(base64), arr = new Uint8Array(bytes.length);
+      for(var i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
       var link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
+      link.href = URL.createObjectURL(new Blob([arr], {type:"application/pdf"}));
       link.download = filename || "Receipt.pdf";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      document.body.appendChild(link); link.click(); document.body.removeChild(link);
     }catch(e){}
   }
 
-  document.getElementById("paymentForm").addEventListener("submit", function(e){
+  // ---- WhatsApp message (opens the student's own chat) ----
+  function waNumber(s){
+    var d = String(s.mobile || "").replace(/\D/g, "");
+    if(d.length === 10) d = "91" + d;
+    return d;
+  }
+  function buildWhatsAppLink(s, p, remainingDues){
+    var L = [];
+    L.push("*Spectrum Dance Academy — Payment Receipt*");
+    L.push("");
+    L.push("Reg No: " + s.regNo);
+    L.push("Name: " + s.studentName);
+    L.push("Payment Date: " + p.paymentDate + " (" + p.paymentMode + ")");
+    L.push("Type: " + p.paymentType);
+    if(p.paymentType === "Monthly Payment"){
+      L.push("Session Date: " + p.sessionDate);
+      L.push("Duration: " + p.duration + " " + p.durationType);
+      L.push("Expiry Date: " + p.expiryDate);
+      L.push("");
+      L.push("Total Amount: " + money(p.totalAmount));
+      L.push("Paid Amount: " + money(p.paidAmount));
+      if(num(p.discountAmount) > 0) L.push("Discount: " + money(p.discountAmount));
+    } else {
+      L.push("Expiry Date: " + (s.expiryDate || "-"));
+      L.push("");
+      L.push("Previous Dues: " + money(p.totalAmount));
+      L.push("Dues Paid Now: " + money(p.paidAmount));
+    }
+    (p.additionalCharges || []).forEach(function(c){
+      L.push(c.name + ": " + money(c.amount) + " (Paid " + money(c.paid) + ")");
+    });
+    L.push("*Remaining Dues: " + money(remainingDues) + "*");
+    if(remainingDues > 0 && p.duesDate) L.push("Pay dues by: " + p.duesDate);
+    L.push("");
+    L.push("Note: Fees once paid are non-refundable as per the academy's terms and conditions.");
+    L.push("Thank you!");
+    return "https://wa.me/" + waNumber(s) + "?text=" + encodeURIComponent(L.join("\n"));
+  }
+
+  $("paymentForm").addEventListener("submit", function(e){
     e.preventDefault();
-    var total = totalInput.value.trim();
-    var paid = paidInput.value.trim();
-    if(total === "" || isNaN(total) || Number(total) < 0){ alert("Enter a valid Total Amount."); return; }
-    if(paid === "" || isNaN(paid) || Number(paid) < 0){ alert("Enter a valid Paid Amount."); return; }
-
-    var btn = document.getElementById("submitBtn");
-    btn.disabled = true;
-    btn.textContent = "Submitting...";
-
-    var payload = {
-      key: ADMIN_KEY,
-      regNo: lookupRegNo.value.trim(),
-      studentName: document.getElementById("studentName").value,
-      mobile: document.getElementById("mobile").value,
-      email: studentEmail,
-      duration: document.getElementById("duration").value,
-      durationType: document.getElementById("durationType").value,
-      expiryDate: document.getElementById("expiryDate").value,
-      paymentSettlement: document.getElementById("paymentSettlement").value,
-      totalAmount: total,
-      paidAmount: paid,
-      discountAmount: discountInput.value.trim() || "0",
-      duesDate: duesDateInput.value || "",
-      additionalCharges: collectAdditionalCharges()
+    if(!current) return;
+    var s = current, p;
+    var payDateISO = $("payDate").value;
+    if(!payDateISO){ alert("Select the Payment Date."); return; }
+    var common = {
+      key: ADMIN_KEY, regNo: s.regNo, studentName: s.studentName, mobile: s.mobile, email: s.email || "",
+      paymentDate: isoToDMY(payDateISO), paymentMode: $("payMode").value,
+      paymentSettlement: s.paymentSettlement || ""
     };
-
-    callApi("submitPayment", payload)
-      .then(function(res){
-        var box = document.getElementById("resultBox");
-        if(res.status === "success"){
-          box.className = "ok";
-          var html = "<h3>Payment Recorded!</h3>Dues: <strong>₹"+res.dues.toFixed(2)+"</strong>";
-          if(res.chargesDues && res.chargesDues > 0){
-            html += "<br>Additional Charges Dues: <strong>₹"+res.chargesDues.toFixed(2)+"</strong>";
-          }
-          html += "<br>Receipt PDF is downloading now and has been emailed to the student.";
-          if(res.whatsapp){
-            if(res.whatsapp.sent){
-              html += "<br>WhatsApp receipt sent automatically.";
-            } else if(res.whatsapp.link){
-              html += "<br><a class='wa-link' target='_blank' href='"+res.whatsapp.link+"'>Send WhatsApp Receipt</a> (tap to open WhatsApp with the bill prefilled)";
-            }
-          }
-          box.innerHTML = html;
-          if(res.pdfBase64) downloadBase64Pdf(res.pdfBase64, res.pdfName);
-          if(res.whatsapp && !res.whatsapp.sent && res.whatsapp.link){
-            window.open(res.whatsapp.link, "_blank");
-          }
-          btn.textContent = "Payment Submitted";
-          resetChargeRows();
-        } else {
-          box.className = "error";
-          box.innerHTML = "<h3>Failed</h3>"+(res.message || "Unknown error");
-          btn.disabled = false;
-          btn.textContent = "Submit Payment & Send Receipt";
-        }
-        box.style.display = "block";
-        box.scrollIntoView({behavior:"smooth", block:"center"});
-      })
-      .catch(function(err){
-        var box = document.getElementById("resultBox");
-        box.className = "error";
-        box.innerHTML = "<h3>Failed</h3>"+err.message;
-        box.style.display = "block";
-        btn.disabled = false;
-        btn.textContent = "Submit Payment & Send Receipt";
+    var remaining;
+    if(payType === "dues"){
+      var pending = studentDues(s), collect = num($("dc_collect").value);
+      if(collect <= 0){ alert("Enter the dues amount being collected."); return; }
+      if(collect > pending){ alert("Collected amount cannot be more than the pending dues (" + pending.toFixed(2) + ")."); return; }
+      remaining = pending - collect;
+      p = Object.assign(common, {
+        paymentType: "Dues Collection", duesType: studentDuesType(s),
+        duration: s.duration || "", durationType: s.durationType || "", expiryDate: s.expiryDate || "",
+        sessionDate: "", totalAmount: pending, paidAmount: collect, discountAmount: "0",
+        duesDate: remaining > 0 ? isoToDMY($("dc_date").value) : "", additionalCharges: []
       });
+    } else {
+      var dur = parseInt($("payDuration").value, 10), dtype = $("payDurType").value;
+      if(!dur || dur < 1){ alert("Enter a valid Duration."); return; }
+      if(!dtype){ alert("Select the Duration Type."); return; }
+      if(totalInput.value.trim() === "" || num(totalInput.value) < 0){ alert("Enter a valid Total Amount."); return; }
+      if(paidInput.value.trim() === "" || num(paidInput.value) < 0){ alert("Enter a valid Paid Amount."); return; }
+      var charges = collectAdditionalCharges();
+      var chargesDues = charges.reduce(function(a, c){ return a + (c.amount - c.paid); }, 0);
+      var courseDues = num(totalInput.value) - num(paidInput.value) - num(discountInput.value);
+      remaining = courseDues + chargesDues;
+      var hadFees = num(s.totalAmount) > 0;
+      p = Object.assign(common, {
+        paymentType: "Monthly Payment", duesType: hadFees ? "Monthly" : "Admission",
+        duration: dur, durationType: dtype, expiryDate: $("newExpiry").value, sessionDate: isoToDMY($("sessionDate").value),
+        totalAmount: totalInput.value.trim(), paidAmount: paidInput.value.trim(),
+        discountAmount: discountInput.value.trim() || "0",
+        duesDate: remaining > 0 ? isoToDMY(duesDateInput.value) : "", additionalCharges: charges
+      });
+    }
+    p.remainingDues = remaining;
+    // total actually received now (course + charges) -> used by the Payment Report
+    p.collectedNow = num(p.paidAmount) + (p.additionalCharges || []).reduce(function(a, c){ return a + c.paid; }, 0);
+
+    var btn = $("submitBtn");
+    btn.disabled = true; btn.textContent = "Submitting...";
+    var box = $("resultBox");
+    callApi("submitPayment", p).then(function(res){
+      if(res.status === "success"){
+        box.className = "ok";
+        var rem = (typeof res.dues === "number") ? res.dues + (res.chargesDues || 0) : remaining;
+        var html = "<h3>Payment Recorded!</h3>Remaining Dues: <strong>" + money(rem) + "</strong>";
+        var waLink = buildWhatsAppLink(s, p, rem);
+        if(res.whatsapp && res.whatsapp.sent){
+          html += "<br>WhatsApp receipt sent automatically.";
+        } else {
+          html += "<br><a class='wa-link' target='_blank' href='" + waLink + "'>Open Student's WhatsApp</a>";
+          window.open(waLink, "_blank");
+        }
+        box.innerHTML = html;
+        if(res.pdfBase64) downloadBase64Pdf(res.pdfBase64, res.pdfName);
+        btn.textContent = "Payment Submitted";
+        loadStudents(); loadReport();
+      } else {
+        box.className = "error";
+        box.innerHTML = "<h3>Failed</h3>" + esc(res.message || "Unknown error");
+        btn.disabled = false; btn.textContent = "Submit Payment & Send on WhatsApp";
+      }
+      box.style.display = "block";
+      box.scrollIntoView({behavior:"smooth", block:"center"});
+    }).catch(function(err){
+      box.className = "error"; box.innerHTML = "<h3>Failed</h3>" + esc(err.message);
+      box.style.display = "block";
+      btn.disabled = false; btn.textContent = "Submit Payment & Send on WhatsApp";
+    });
   });
+
+  // ============ TOTAL STUDENTS ============
+  $("stFilter").addEventListener("input", renderStudents);
+  $("btnReloadStudents").addEventListener("click", loadStudents);
+  function renderStudents(){
+    if(!studentsLoaded) return;
+    var q = norm($("stFilter").value);
+    var list = !q ? STUDENTS : STUDENTS.filter(function(s){
+      return [s.regNo, s.studentName, s.mobile, s.altMobile, s.guardianMobile, s.interestedFor, s.batchTime].some(function(v){ return norm(v).indexOf(q) > -1; });
+    });
+    $("stCount").textContent = "Total Students: " + STUDENTS.length + (q ? " · Showing " + list.length : "");
+    $("stList").innerHTML = list.length ? list.map(function(s){
+      return '<div class="srow"><div><div class="nm">' + esc(s.studentName) + '</div>' +
+        '<div class="sub">Reg ' + esc(s.regNo) + ' · ' + esc(s.mobile) + '<br>' + esc(s.interestedFor) + ' · ' + esc(s.batchTime) +
+        '<br>Expiry: ' + esc(s.expiryDate || "-") + (studentDues(s) > 0 ? ' · <span class="due">Dues ' + money(studentDues(s)) + '</span>' : '') + '</div></div>' +
+        '<div class="row-actions"><button type="button" class="btn-sm" data-edit="' + esc(s.regNo) + '">Edit</button>' +
+        '<button type="button" class="btn-sm danger" data-del="' + esc(s.regNo) + '">Delete</button></div></div>';
+    }).join("") : '<div class="empty">No students found.</div>';
+    $("stList").querySelectorAll("[data-edit]").forEach(function(b){ b.addEventListener("click", function(){ openEdit(b.getAttribute("data-edit")); }); });
+    $("stList").querySelectorAll("[data-del]").forEach(function(b){ b.addEventListener("click", function(){ askDelete(b.getAttribute("data-del")); }); });
+  }
+  function byReg(reg){ return STUDENTS.filter(function(s){ return String(s.regNo) === String(reg); })[0]; }
+
+  // ---- delete with confirmation pop-up ----
+  var delReg = null;
+  function askDelete(reg){
+    var s = byReg(reg); if(!s) return;
+    delReg = reg;
+    $("delText").innerHTML = "Are you sure you want to delete <b>" + esc(s.studentName) + "</b> (Reg " + esc(s.regNo) + ")? This cannot be undone.";
+    $("delModal").classList.add("show");
+  }
+  $("delCancel").addEventListener("click", function(){ $("delModal").classList.remove("show"); });
+  $("delOk").addEventListener("click", function(){
+    var btn = $("delOk"); btn.disabled = true; btn.textContent = "Deleting...";
+    callApi("deleteStudent", { adminKey: ADMIN_KEY, regNo: delReg }).then(function(res){
+      if(res.status === "success"){
+        STUDENTS = STUDENTS.filter(function(s){ return String(s.regNo) !== String(delReg); });
+        if(current && String(current.regNo) === String(delReg)){ current = null; show($("studentCard"), false); show($("paymentForm"), false); }
+        renderStudents(); renderDues();
+      } else alert(res.message || "Delete failed");
+    }).catch(function(err){ alert("Error: " + err.message); })
+      .then(function(){ btn.disabled = false; btn.textContent = "Yes, Delete"; $("delModal").classList.remove("show"); });
+  });
+
+  // ---- edit: every admission-form column ----
+  var EDIT_FIELDS = [
+    ["admissionDate","Admission Date","text"], ["studentName","Student Name","text"], ["dob","Date of Birth","text"],
+    ["mobile","Mobile No.","tel"], ["altMobile","Alternate Mobile","tel"], ["studentOccupation","Student Occupation","text"],
+    ["email","Email","email"], ["guardianName","Guardian Name","text"], ["guardianRelation","Guardian Relation","text"],
+    ["guardianOccupation","Guardian Occupation","text"], ["guardianMobile","Guardian Mobile","tel"], ["aadhar","Aadhar No.","text"],
+    ["presentAddress","Present Address","area"], ["currentAddress","Current Address","area"],
+    ["interestedFor","Interested For","select:" + Object.keys(BATCHES).join("|")],
+    ["batchTime","Batch Time","batch"], ["duration","Duration","number"],
+    ["durationType","Duration Type","select:Day|Month|Year"], ["expiryDate","Expiry Date (dd/mm/yyyy)","text"],
+    ["paymentSettlement","Payment Settlement","select:One Time|Installment|Monthly"]
+  ];
+  (function buildEditForm(){
+    $("editFields").innerHTML = EDIT_FIELDS.map(function(f){
+      var id = "ef_" + f[0], t = f[2], input;
+      if(t === "area") input = '<textarea id="' + id + '"></textarea>';
+      else if(t === "batch") input = '<select id="' + id + '"></select>';
+      else if(t.indexOf("select:") === 0) input = '<select id="' + id + '"><option value="">Select</option>' + t.slice(7).split("|").map(function(o){ return "<option>" + o + "</option>"; }).join("") + '</select>';
+      else input = '<input type="' + (t === "number" ? "number" : t === "text" ? "text" : t) + '" id="' + id + '">';
+      return '<div class="field' + (t === "area" ? '" style="grid-column:1/-1' : '') + '"><label>' + f[1] + '</label>' + input + '</div>';
+    }).join("");
+    $("ef_interestedFor").addEventListener("change", function(){ fillBatchOptions(this.value, ""); });
+  })();
+  function fillBatchOptions(interest, keep){
+    var list = BATCHES[interest] || [], sel = $("ef_batchTime");
+    if(interest && !list.length){
+      sel.innerHTML = "<option>" + NO_FIXED_BATCH_MSG + "</option>"; sel.value = NO_FIXED_BATCH_MSG; return;
+    }
+    var opts = list.map(function(b){ return b.t; });
+    if(keep && opts.indexOf(keep) < 0) opts.push(keep);
+    sel.innerHTML = "<option value=''>Select batch</option>" + opts.map(function(o){ return "<option>" + esc(o) + "</option>"; }).join("");
+    sel.value = keep || "";
+  }
+  var editReg = null;
+  function openEdit(reg){
+    var s = byReg(reg); if(!s) return;
+    editReg = reg; $("editReg").textContent = reg; $("editMsg").textContent = "";
+    EDIT_FIELDS.forEach(function(f){
+      if(f[0] === "batchTime") return;
+      var el = $("ef_" + f[0]); el.value = s[f[0]] == null ? "" : s[f[0]];
+    });
+    fillBatchOptions(s.interestedFor, s.batchTime || "");
+    $("editModal").classList.add("show");
+  }
+  $("editCancel").addEventListener("click", function(){ $("editModal").classList.remove("show"); });
+  $("editSave").addEventListener("click", function(){
+    var fields = {};
+    EDIT_FIELDS.forEach(function(f){ fields[f[0]] = $("ef_" + f[0]).value.trim(); });
+    if(!fields.studentName){ $("editMsg").textContent = "Student name is required."; return; }
+    var info = (BATCHES[fields.interestedFor] || []).filter(function(b){ return b.t === fields.batchTime; })[0];
+    fields.batchDays = info ? info.d : (BATCHES[fields.interestedFor] && !BATCHES[fields.interestedFor].length ? "No fixed batch" : "");
+    var btn = $("editSave"); btn.disabled = true; btn.textContent = "Saving...";
+    callApi("updateStudent", { adminKey: ADMIN_KEY, regNo: editReg, fields: fields }).then(function(res){
+      if(res.status === "success"){
+        var s = byReg(editReg); Object.keys(fields).forEach(function(k){ s[k] = fields[k]; });
+        if(current && String(current.regNo) === String(editReg)){ current = s; fillStudentCard(); }
+        renderStudents(); renderDues();
+        $("editModal").classList.remove("show");
+      } else $("editMsg").textContent = res.message || "Update failed";
+    }).catch(function(err){ $("editMsg").textContent = "Error: " + err.message; })
+      .then(function(){ btn.disabled = false; btn.textContent = "Save Changes"; });
+  });
+
+  // ============ DUES ============
+  $("btnFilter").addEventListener("click", function(e){ e.stopPropagation(); $("filterMenu").classList.toggle("show"); });
+  document.addEventListener("click", function(){ $("filterMenu").classList.remove("show"); });
+  $("filterMenu").querySelectorAll("button").forEach(function(b){
+    b.addEventListener("click", function(){
+      duesFilter = b.getAttribute("data-f");
+      $("filterMenu").querySelectorAll("button").forEach(function(x){ x.classList.toggle("on", x === b); });
+      $("filterLbl").textContent = duesFilter === "all" ? "All" : duesFilter;
+      renderDues();
+    });
+  });
+  function renderDues(){
+    if(!studentsLoaded) return;
+    var list = STUDENTS.filter(function(s){
+      return studentDues(s) > 0 && (duesFilter === "all" || studentDuesType(s) === duesFilter);
+    });
+    var sum = list.reduce(function(a, s){ return a + studentDues(s); }, 0);
+    $("dueSummary").textContent = list.length + " student(s) · Total dues " + money(sum);
+    $("dueList").innerHTML = list.length ? list.map(function(s){
+      return '<div class="srow"><div><div class="nm">' + esc(s.studentName) + '</div>' +
+        '<div class="sub">Reg ' + esc(s.regNo) + ' · ' + esc(s.mobile) + '<br>' + studentDuesType(s) + ' Dues' +
+        (s.duesDate ? ' · Pay by ' + esc(s.duesDate) : '') + '</div></div>' +
+        '<div style="text-align:right"><div class="due">' + money(studentDues(s)) + '</div>' +
+        '<button type="button" class="btn-sm ok" style="margin-top:6px" data-collect="' + esc(s.regNo) + '">Collect</button></div></div>';
+    }).join("") : '<div class="empty">No dues found.</div>';
+    $("dueList").querySelectorAll("[data-collect]").forEach(function(b){
+      b.addEventListener("click", function(){
+        var s = byReg(b.getAttribute("data-collect")); if(!s) return;
+        document.querySelector('.tab-btn[data-tab="fees"]').click();
+        lookupInput.value = s.regNo;
+        selectStudent(s);
+        $("btnAddPayment").click();
+      });
+    });
+  }
+
+  // ============ INIT ============
+  // Old link flow still works: payment.html?regNo=26001&key=...
+  lookupInput.value = urlParams.get("regNo") || "";
+  loadReport();
+  loadStudents().then(function(){ if(lookupInput.value.trim()) doSearch(true); });
 </script>
 </body>
 </html>
