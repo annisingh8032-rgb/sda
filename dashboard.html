@@ -147,9 +147,10 @@ $("modal").addEventListener("click",function(e){if(e.target===this)closeModal()}
 
 // ---- helpers to read a student row regardless of exact header spelling ----
 function g(row,re){for(var k in row){if(re.test(k))return row[k]}return ""}
-var F={reg:/reg/i,name:/^(student\s*)?name/i,phone:/^(mobile|phone|contact)|^(student\s*)?(mobile|phone)/i,adm:/admission\s*date|^date/i,batch:/batch|time/i,cat:/categor/i,dur:/^duration$/i,durT:/duration\s*type/i,exp:/expiry/i,dues:/^dues$/i};
+var F={reg:/^registration/i,name:/^student name/i,phone:/^mobile/i,adm:/^admission date/i,batch:/^batch time/i,cat:/^interested/i,dur:/^duration$/i,durT:/^duration type/i,exp:/^expiry/i};
+function due(s){return Number(s._dues)||0}
 function matchStu(row,q){q=q.toLowerCase().trim();if(!q)return true;
-  for(var k in row){if(/reg|name|phone|mobile|alternate|guardian|contact/i.test(k)&&String(row[k]).toLowerCase().indexOf(q)>-1)return true}return false}
+  for(var k in row){if(/reg|name|mobile|phone/i.test(k)&&String(row[k]).toLowerCase().indexOf(q)>-1)return true}return false}
 
 var students=[],headers=[],cur=null;
 
@@ -175,7 +176,7 @@ function fetchStudents(){return api("getStudents",{}).then(function(r){
   if(r.status!=="success")throw new Error(r.message||"Failed to load students");
   students=r.rows||[];headers=r.headers||(students[0]?Object.keys(students[0]):[]);
   $("cStu").textContent=students.length+" students";
-  var d=students.filter(function(s){return Number(g(s,F.dues))>0}).length;$("cDues").textContent=d+" pending";return students})}
+  var d=students.filter(function(s){return due(s)>0}).length;$("cDues").textContent=d+" pending";return students})}
 
 // ================= FEES =================
 $("feeSearch").addEventListener("input",function(){
@@ -186,9 +187,9 @@ $("feeSearch").addEventListener("input",function(){
   students.length?go():fetchStudents().then(go).catch(function(e){toast(e.message)});});
 
 function pickStudent(s){cur=s;$("feeResults").innerHTML="";$("feeSearch").value="";$("feeForm").innerHTML="";$("feeStudent").classList.remove("hide");
-  var items=[["Reg No",g(s,F.reg)],["Name",g(s,F.name)],["Phone",g(s,F.phone)],["Admission Date",g(s,F.adm)],["Batch Time",g(s,F.batch)],["Category",g(s,F.cat)],["Duration",g(s,F.dur)+" "+g(s,F.durT)],["Expiry Date",g(s,F.exp)],["Dues",inr(g(s,F.dues))]];
-  $("feeInfo").innerHTML=items.map(function(x){return"<div><span>"+x[0]+"</span><b"+(x[0]==="Dues"&&Number(g(s,F.dues))>0?' class="red"':"")+">"+esc(x[1])+"</b></div>"}).join("");
-  $("btnUpdDues").classList.toggle("hide",!(Number(g(s,F.dues))>0));loadHistory();}
+  var items=[["Reg No",g(s,F.reg)],["Name",g(s,F.name)],["Phone",g(s,F.phone)],["Admission Date",g(s,F.adm)],["Batch Time",g(s,F.batch)],["Category",g(s,F.cat)],["Duration",g(s,F.dur)+" "+g(s,F.durT)],["Expiry Date",g(s,F.exp)],["Dues",inr(due(s))]];
+  $("feeInfo").innerHTML=items.map(function(x){return"<div><span>"+x[0]+"</span><b"+(x[0]==="Dues"&&due(s)>0?' class="red"':"")+">"+esc(x[1])+"</b></div>"}).join("");
+  $("btnUpdDues").classList.toggle("hide",!(due(s)>0));loadHistory();}
 
 function loadHistory(){var reg=g(cur,F.reg);$("payHistory").innerHTML='<div class="muted">Loading...</div>';
   api("getPayments",{regNo:reg}).then(function(r){
@@ -208,12 +209,13 @@ function editPayment(p){var keys=[["paymentDate","Payment Date"],["sessionDate",
     api("updatePayment",{regNo:g(cur,F.reg),paymentId:p.id,data:d}).then(function(r){closeModal();toast(r.status==="success"?"Payment updated":r.message);loadHistory();loadReport()})}}
 
 // payment form: used for both "Add Payment" and "Update Dues"
-function payForm(mode){var s=cur,isDues=mode==="dues",dues0=Number(g(s,F.dues))||0;
+function payForm(mode){var s=cur,isDues=mode==="dues",dues0=due(s)||0;
   $("feeForm").innerHTML='<div class="card"><b>'+(isDues?"Update Dues":"Add Payment")+'</b><div class="grid" style="margin-top:10px">'+
   '<div><label>Payment Date</label><input type="date" id="fPD" value="'+today()+'"></div>'+
   '<div><label>Session Date</label><input type="date" id="fSD" value="'+esc(toISO(g(s,F.exp)))+'"></div>'+
   '<div><label>Duration</label><input id="fDur" type="number" min="0" value="'+esc(g(s,F.dur))+'"></div>'+
-  '<div><label>Duration Type</label><select id="fDT">'+["Month","Days","Year"].map(function(t){return"<option"+(new RegExp(t,"i").test(g(s,F.durT))?" selected":"")+">"+t+"</option>"}).join("")+'</select></div>'+
+  '<div><label>Duration Type</label><select id="fDT">'+["Day","Month","Year"].map(function(t){return"<option"+(new RegExp(t,"i").test(g(s,F.durT))?" selected":"")+">"+t+"</option>"}).join("")+'</select></div>'+
+  '<div><label>New Expiry Date</label><input id="fExp" readonly></div>'+
   '<div><label>Total Amount (₹)</label><input id="fTot" type="number" min="0" step="0.01" '+(isDues?'value="'+dues0+'" readonly':"")+'></div>'+
   '<div><label>Paid Amount (₹)</label><input id="fPaid" type="number" min="0" step="0.01"></div>'+
   '<div><label>Dues (₹)</label><input id="fDues" readonly value="0.00"></div>'+
@@ -222,11 +224,15 @@ function payForm(mode){var s=cur,isDues=mode==="dues",dues0=Number(g(s,F.dues))|
   '<button class="b pri" id="fSubmit" style="margin-top:14px">Submit &amp; Send WhatsApp</button></div>';
   function calc(){var d=(parseFloat($("fTot").value)||0)-(parseFloat($("fPaid").value)||0);$("fDues").value=d.toFixed(2);$("fDDw").classList.toggle("hide",!(d>0))}
   $("fTot").oninput=calc;$("fPaid").oninput=calc;calc();
+  function calcExp(){if(isDues){$("fExp").value=g(s,F.exp);return}var b=$("fSD").value,n=parseInt($("fDur").value,10),t=$("fDT").value;if(!b||!n){$("fExp").value="";return}
+    var d=new Date(b+"T00:00:00");if(t==="Day")d.setDate(d.getDate()+n);else if(t==="Month")d.setMonth(d.getMonth()+n);else d.setFullYear(d.getFullYear()+n);
+    $("fExp").value=("0"+d.getDate()).slice(-2)+"/"+("0"+(d.getMonth()+1)).slice(-2)+"/"+d.getFullYear()}
+  $("fSD").oninput=calcExp;$("fDur").oninput=calcExp;$("fDT").onchange=calcExp;calcExp();
   $("fSubmit").onclick=function(){var b=this;if(!$("fTot").value||$("fPaid").value===""){toast("Total aur Paid amount bhariye");return}
     b.disabled=true;b.textContent="Submitting...";
     api(isDues?"payDues":"submitPayment",{regNo:g(s,F.reg),studentName:g(s,F.name),mobile:g(s,F.phone),duration:$("fDur").value,durationType:$("fDT").value,
-      paymentDate:$("fPD").value,sessionDate:$("fSD").value,expiryDate:g(s,F.exp),totalAmount:$("fTot").value,paidAmount:$("fPaid").value,
-      duesDate:$("fDD").value,paymentMode:$("fMode").value,paymentSettlement:g(s,/settlement/i),discountAmount:"0",additionalCharges:[]}).then(function(r){
+      paymentDate:$("fPD").value,sessionDate:$("fSD").value,expiryDate:$("fExp").value,email:s['Email']||'',totalAmount:$("fTot").value,paidAmount:$("fPaid").value,
+      duesDate:$("fDD").value,paymentMode:$("fMode").value,paymentSettlement:s['Payment Settlement']||'',discountAmount:"0",additionalCharges:[]}).then(function(r){
       if(r.status!=="success"){toast(r.message||"Failed");b.disabled=false;b.textContent="Submit & Send WhatsApp";return}
       $("feeForm").innerHTML="";waDone(r,"Payment saved");loadHistory();loadReport();fetchStudents().then(function(){var n=students.filter(function(x){return g(x,F.reg)==g(s,F.reg)})[0];if(n)pickStudent(n)})
     }).catch(function(e){toast(e.message);b.disabled=false;b.textContent="Submit & Send WhatsApp"})}}
@@ -244,7 +250,7 @@ function renderDues(){var q=$("duesSearch").value;
   $("overdueAlert").innerHTML=over.length?'<div class="alert">⚠ '+over.length+" student(s) ka dues date nikal chuka hai: "+over.slice(0,5).map(function(d){return esc(d.studentName)}).join(", ")+(over.length>5?"...":"")+"</div>":"";
   var rows=duesRows.filter(function(d){
     if(duesF==="admission"&&!/admission/i.test(d.type))return false;if(duesF==="monthly"&&!/month/i.test(d.type))return false;if(duesF==="overdue"&&!isOver(d))return false;
-    return matchStu({regNo:d.regNo,name:d.studentName,phone:d.mobile,alternate:d.alternate},q)});
+    return matchStu({regNo:d.regNo,studentName:d.studentName,mobile:d.mobile,altMobile:d.altMobile},q)});
   $("duesList").innerHTML=rows.length?'<table><tr><th>Reg No</th><th>Name</th><th>Phone</th><th>Type</th><th>Dues</th><th>Dues Date</th><th></th></tr>'+rows.map(function(d,i){
     return"<tr><td>"+esc(d.regNo)+"</td><td>"+esc(d.studentName)+"</td><td>"+esc(d.mobile)+"</td><td>"+esc(d.type)+'</td><td class="red">'+inr(d.dues)+"</td><td"+(isOver(d)?' class="red"':"")+">"+esc(d.dueDate||"—")+(isOver(d)?" ⚠":"")+'</td><td><button class="b ok" data-r="'+esc(d.regNo)+'">Update</button></td></tr>'}).join("")+"</table>":'<div class="muted">Koi dues nahi mila.</div>';
   $("duesList").querySelectorAll("button").forEach(function(b){b.addEventListener("click",function(){
@@ -263,7 +269,7 @@ function renderStudents(){var q=$("stuSearch").value.toLowerCase();
     else if(ask("Kya aap sach mai is student ko delete karna chahte hai? Data Google Sheet se bhi hat jayega."))api("deleteStudent",{regNo:b.dataset.r}).then(function(r){toast(r.status==="success"?"Student deleted":r.message);loadStudents()})})})}
 $("stuSearch").addEventListener("input",renderStudents);
 function editStudent(s){
-  modal("<h3>Edit Student — "+esc(g(s,F.name))+"</h3><div class='grid'>"+headers.map(function(h,i){return"<div><label>"+esc(h)+"</label><input data-h='"+esc(h)+"' value='"+esc(s[h])+"'></div>"}).join("")+"</div><div class='row' style='margin-top:14px'><button class='b ok' id='mSave'>Save</button><button class='b' id='mCancel'>Cancel</button></div>");
+  modal("<h3>Edit Student — "+esc(g(s,F.name))+"</h3><div class='grid'>"+headers.map(function(h,i){return"<div><label>"+esc(h)+"</label><input data-h='"+esc(h)+"' value='"+esc(s[h])+"'"+(F.reg.test(h)?" readonly":"")+"></div>"}).join("")+"</div><div class='row' style='margin-top:14px'><button class='b ok' id='mSave'>Save</button><button class='b' id='mCancel'>Cancel</button></div>");
   $("mCancel").onclick=closeModal;
   $("mSave").onclick=function(){var d={};document.querySelectorAll("#modalBox input").forEach(function(i){d[i.dataset.h]=i.value});
     api("updateStudent",{regNo:g(s,F.reg),data:d}).then(function(r){closeModal();toast(r.status==="success"?"Student updated":r.message);loadStudents()})}}
